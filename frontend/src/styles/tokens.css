@@ -1,0 +1,96 @@
+/*
+ * Tokens de design extraídos do protótipo do Claude Design.
+ * A tela "Tokens" do painel (src/app/pages/TokensPage.tsx) documenta estes valores.
+ */
+:root {
+  /* ----- Painel (app) ----- */
+  --app-canvas: #f4f5f6;
+  --app-surface: #ffffff;
+  --app-surface-muted: #fafbfb;
+  --app-border: #e3e6e8;
+  --app-border-strong: #d8dde0;
+  --app-border-hover: #c9cfd3;
+  --app-line: #eef0f1;
+  --app-line-soft: #f3f4f5;
+  --app-hover: #f0f2f3;
+  --app-text: #16191c;
+  --app-text-soft: #414a50;
+  --app-muted: #667077;
+  --app-muted-2: #8a9298;
+  --app-avatar-bg: #edeff0;
+
+  /* Acento do painel — trocável (a prop `accentColor` do protótipo). */
+  --accent: #175c6b;
+  --accent-soft: #edf3f4;
+  --accent-soft-border: #d3e2e5;
+  --accent-ink: #175260;
+
+  /* Status */
+  --status-pending-bg: #faf6ec;
+  --status-pending-ink: #7a6425;
+  --status-pending-border: #e9dfc6;
+  --status-pending-rail: #c0a85e;
+  --status-done-bg: #f1f2f3;
+  --status-done-ink: #5a6167;
+  --status-done-border: #e1e4e6;
+  --status-cancel-bg: #f8f0ee;
+  --status-cancel-ink: #8a4436;
+  --status-cancel-border: #e9d6d0;
+  --status-cancel-rail: #c99384;
+
+  /* Alerta de conflito */
+  --alert-bg: #fdf6f4;
+  --alert-border: #efd9d2;
+  --alert-ink: #7a362b;
+  --alert-ink-soft: #8a5247;
+  --alert-button-border: #d9bdb5;
+  --alert-button-hover: #fbf0ed;
+
+  /* ----- Landing ----- */
+  --site-bg: #fbfbfa;
+  --site-surface: #ffffff;
+  --site-border: #e4e6e5;
+  --site-border-strong: #d3d8d7;
+  --site-border-soft: #eff1f0;
+  --site-line: #f4f5f5;
+  --site-text: #16191a;
+  --site-text-soft: #3f4a49;
+  --site-muted: #4e5756;
+  --site-muted-2: #5f6968;
+  --site-muted-3: #7b8483;
+  --site-muted-4: #8a9392;
+  --site-muted-5: #969e9d;
+  --site-accent: #17494f;
+  --site-accent-hover: #0f3236;
+  --site-accent-soft: #e6eeed;
+  --site-accent-tint: #f1f4f3;
+  --site-chip-bg: #f4f6f5;
+  --site-chip-border: #dce2e1;
+
+  /* Seção escura da landing */
+  --dark-bg: #16191a;
+  --dark-panel: #1c201f;
+  --dark-panel-head: #222726;
+  --dark-border: #2c3231;
+  --dark-bubble: #262b2a;
+  --dark-bubble-mine: #25403f;
+  --dark-text: #f3f4f4;
+  --dark-text-soft: #bec6c5;
+  --dark-accent: #7fa7a4;
+
+  /* ----- Escala compartilhada ----- */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --shadow-overlay: 0 12px 32px rgba(22, 25, 28, 0.18);
+  --shadow-card: 0 1px 2px rgba(22, 25, 28, 0.05);
+
+  --font-sans: 'IBM Plex Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font-mono: 'IBM Plex Mono', ui-monospace, SFMono-Regular, monospace;
+}
