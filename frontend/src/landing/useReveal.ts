@@ -1,8 +1,8 @@
 import { useEffect, useRef } from 'react';
 
 /**
- * Revela o bloco quando ele entra na viewport (equivalente ao IntersectionObserver
- * do protótipo). Retorna a ref que deve ir no elemento com a classe `reveal`.
+ * Reveals the block when it enters the viewport (the prototype's
+ * IntersectionObserver). Returns the ref for the element with the `reveal` class.
  */
 export function useReveal<T extends HTMLElement>() {
   const ref = useRef<T>(null);

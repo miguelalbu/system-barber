@@ -1,7 +1,7 @@
 /**
- * Tipos de domínio do painel.
- * Espelham o que o backend deverá expor — hoje alimentados pelos mocks
- * em `src/data/app.ts`, amanhã pelas funções de `src/api/client.ts`.
+ * Panel domain types.
+ * They mirror what the backend will expose — fed today by the mocks in
+ * `src/data/app.ts`, tomorrow by the functions in `src/api/client.ts`.
  */
 
 export type AppointmentStatus = 'confirmado' | 'pendente' | 'concluido' | 'cancelado';
@@ -11,7 +11,7 @@ export interface Barber {
   id: string;
   name: string;
   initials: string;
-  /** Janela de trabalho no dia, ex.: "09:00–19:00". */
+  /** Working window for the day, e.g. "09:00–19:00". */
   shift: string;
 }
 
@@ -25,7 +25,7 @@ export interface Appointment {
   client: string;
   service: string;
   status: AppointmentStatus;
-  /** Criado pelo atendimento automatizado no WhatsApp. */
+  /** Created by the automated WhatsApp assistant. */
   fromAi?: boolean;
 }
 
@@ -52,7 +52,7 @@ export interface Thread {
   time: string;
   last: string;
   tag: ThreadTag;
-  /** Selo extra, ex.: "Agendou" ou "Humano". */
+  /** Extra tag, e.g. "Agendou" or "Humano". */
   note?: string;
 }
 
@@ -92,7 +92,7 @@ export interface Kpi {
   hint: string;
 }
 
-/** Estados de demonstração da agenda enquanto não há backend. */
+/** Calendar demo states, until the backend is wired in. */
 export type AgendaDemoState = 'normal' | 'vazio' | 'conflito';
 
 export type ModalKind = 'ia' | 'manual';

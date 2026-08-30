@@ -21,8 +21,7 @@ export default function Header() {
         </nav>
 
         <div className="header-actions">
-          {/* Entra direto no painel — o login real chega com o backend. */}
-          <Link to="/app/agenda" className="header-login">
+          <Link to="/entrar" className="header-login">
             Entrar
           </Link>
           <a href="#cta-final" className="btn-solid">

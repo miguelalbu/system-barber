@@ -1,10 +1,9 @@
 /**
- * Ponte para o backend.
+ * Bridge to the backend.
  *
- * Enquanto `VITE_API_URL` não estiver configurada, as funções abaixo devolvem
- * os dados de demonstração de `src/data/app.ts`. Assim que o backend existir,
- * basta trocar o corpo de cada função por uma chamada a `request()` — as telas
- * não mudam, porque já consomem estes tipos.
+ * While `VITE_API_URL` is unset, the functions below return the demo data from
+ * `src/data/app.ts`. Once the backend is up, swap each body for a `request()`
+ * call — the screens do not change, because they already consume these types.
  */
 import type {
   Appointment,

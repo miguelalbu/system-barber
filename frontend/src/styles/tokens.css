@@ -1,9 +1,9 @@
 /*
- * Tokens de design extraídos do protótipo do Claude Design.
- * A tela "Tokens" do painel (src/app/pages/TokensPage.tsx) documenta estes valores.
+ * Design tokens extracted from the Claude Design prototype.
+ * The panel's "Tokens" screen (src/app/pages/TokensPage.tsx) documents them.
  */
 :root {
-  /* ----- Painel (app) ----- */
+  /* ----- Panel (app) ----- */
   --app-canvas: #f4f5f6;
   --app-surface: #ffffff;
   --app-surface-muted: #fafbfb;
@@ -19,7 +19,7 @@
   --app-muted-2: #8a9298;
   --app-avatar-bg: #edeff0;
 
-  /* Acento do painel — trocável (a prop `accentColor` do protótipo). */
+  /* Panel accent — swappable (the prototype's `accentColor` prop). */
   --accent: #175c6b;
   --accent-soft: #edf3f4;
   --accent-soft-border: #d3e2e5;
@@ -38,7 +38,7 @@
   --status-cancel-border: #e9d6d0;
   --status-cancel-rail: #c99384;
 
-  /* Alerta de conflito */
+  /* Conflict alert */
   --alert-bg: #fdf6f4;
   --alert-border: #efd9d2;
   --alert-ink: #7a362b;
@@ -67,7 +67,7 @@
   --site-chip-bg: #f4f6f5;
   --site-chip-border: #dce2e1;
 
-  /* Seção escura da landing */
+  /* Landing dark section */
   --dark-bg: #16191a;
   --dark-panel: #1c201f;
   --dark-panel-head: #222726;
@@ -78,7 +78,7 @@
   --dark-text-soft: #bec6c5;
   --dark-accent: #7fa7a4;
 
-  /* ----- Escala compartilhada ----- */
+  /* ----- Shared scale ----- */
   --space-1: 4px;
   --space-2: 8px;
   --space-3: 12px;

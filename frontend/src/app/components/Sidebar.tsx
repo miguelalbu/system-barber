@@ -1,6 +1,7 @@
-import { NavLink } from 'react-router-dom';
+import { NavLink, useNavigate } from 'react-router-dom';
 import Icon, { type IconName } from './Icon';
-import { CURRENT_USER, ORG_NAME, UNITS } from '@/data/app';
+import { ROLE_LABELS } from '@/api/auth';
+import { useAuth, useMe } from '@/auth/AuthContext';
 
 interface NavEntry {
   to: string;
@@ -19,12 +20,30 @@ export const NAV: NavEntry[] = [
   { to: '/app/tokens', label: 'Tokens', icon: 'tokens' },
 ];
 
+/** "Miguel Albuquerque" → "MA". Matches how the panel renders every avatar. */
+export function initialsOf(name: string): string {
+  const parts = name.split(' ').filter(Boolean);
+  if (parts.length === 0) return '??';
+  if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
+  return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+}
+
 interface SidebarProps {
-  unitIndex: number;
+  unitLabel: string;
+  canSwitchUnit: boolean;
   onCycleUnit: () => void;
 }
 
-export default function Sidebar({ unitIndex, onCycleUnit }: SidebarProps) {
+export default function Sidebar({ unitLabel, canSwitchUnit, onCycleUnit }: SidebarProps) {
+  const me = useMe();
+  const { signOut } = useAuth();
+  const navigate = useNavigate();
+
+  async function handleSignOut() {
+    await signOut();
+    navigate('/entrar', { replace: true });
+  }
+
   return (
     <aside className="sidebar">
       <div className="sidebar-brand">
@@ -33,10 +52,19 @@ export default function Sidebar({ unitIndex, onCycleUnit }: SidebarProps) {
       </div>
 
       <div className="sidebar-unit">
-        <div className="sidebar-org">{ORG_NAME}</div>
-        <button type="button" className="unit-switch" onClick={onCycleUnit}>
-          <span>{UNITS[unitIndex]}</span>
-          <Icon name="chevron-down" size={12} stroke="var(--app-muted-2)" />
+        <div className="sidebar-org">{me.tenant.name}</div>
+        <button
+          type="button"
+          className="unit-switch"
+          onClick={onCycleUnit}
+          disabled={!canSwitchUnit}
+          // A single unit has nothing to switch to, so the control stays inert.
+          title={canSwitchUnit ? 'Trocar de unidade' : undefined}
+        >
+          <span>{unitLabel}</span>
+          {canSwitchUnit ? (
+            <Icon name="chevron-down" size={12} stroke="var(--app-muted-2)" />
+          ) : null}
         </button>
       </div>
 
@@ -55,11 +83,20 @@ export default function Sidebar({ unitIndex, onCycleUnit }: SidebarProps) {
       </nav>
 
       <div className="sidebar-user">
-        <div className="avatar avatar-sq">{CURRENT_USER.initials}</div>
+        <div className="avatar avatar-sq">{initialsOf(me.user.name)}</div>
         <div style={{ minWidth: 0 }}>
-          <div className="sidebar-user-name">{CURRENT_USER.name}</div>
-          <div className="sidebar-user-role">{CURRENT_USER.role}</div>
+          <div className="sidebar-user-name">{me.user.name}</div>
+          <div className="sidebar-user-role">{ROLE_LABELS[me.user.role]}</div>
         </div>
+        <button
+          type="button"
+          className="sidebar-signout"
+          onClick={handleSignOut}
+          aria-label="Sair"
+          title="Sair"
+        >
+          <Icon name="logout" size={14} />
+        </button>
       </div>
     </aside>
   );

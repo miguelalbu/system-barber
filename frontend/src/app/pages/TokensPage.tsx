@@ -1,4 +1,4 @@
-/** Documentação viva do design system — espelha src/styles/tokens.css. */
+/** Living design-system documentation — mirrors src/styles/tokens.css. */
 
 const PALETTE = [
   { name: 'canvas', hex: '#F4F5F6', use: 'fundo da aplicação' },

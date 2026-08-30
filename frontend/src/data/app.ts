@@ -1,6 +1,6 @@
 /**
- * Dados de demonstração do painel, extraídos do protótipo de design.
- * Substitua por chamadas de `src/api/client.ts` quando o backend existir.
+ * Panel demo data, extracted from the design prototype.
+ * Replace with calls from `src/api/client.ts` once the backend is wired in.
  */
 import type {
   Appointment,
@@ -15,13 +15,10 @@ import type {
   UpcomingAppointment,
 } from '@/types';
 
-export const UNITS = ['Unidade Centro', 'Unidade Zona Sul', 'Todas as unidades'];
+// The signed-in user, the shop name and the unit list now come from
+// /auth/me — see src/auth/AuthContext.tsx.
 
-export const CURRENT_USER = { name: 'Camila Rocha', role: 'Recepção', initials: 'CR' };
-
-export const ORG_NAME = 'Barbearia Central';
-
-/** Dia exibido no protótipo. */
+/** The day shown in the prototype. */
 export const AGENDA_DAY = 'Seg, 17 de agosto de 2026';
 export const DASHBOARD_DAY = 'Segunda, 17 de agosto';
 

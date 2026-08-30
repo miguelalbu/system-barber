@@ -4,7 +4,7 @@ import Sidebar from './components/Sidebar';
 import Topbar from './components/Topbar';
 import AppointmentModal from './components/AppointmentModal';
 import { ShellContext } from './shell-context';
-import { UNITS } from '@/data/app';
+import { useMe } from '@/auth/AuthContext';
 import type { ModalKind } from '@/types';
 import './app.css';
 
@@ -18,23 +18,42 @@ const TITLES: Record<string, string> = {
   '/app/tokens': 'Sistema de tokens',
 };
 
+const ALL_UNITS = 'Todas as unidades';
+
 export default function AppLayout() {
   const { pathname } = useLocation();
+  const me = useMe();
   const [unitIndex, setUnitIndex] = useState(0);
   const [modal, setModal] = useState<ModalKind | null>(null);
 
+  // Real units from /auth/me. Someone who sees every unit also gets the
+  // aggregate option; someone scoped to one unit has nothing to switch.
+  const unitLabels = useMemo(() => {
+    const names = me.units.map((unit) => unit.name);
+    return me.all_units && names.length > 1 ? [...names, ALL_UNITS] : names;
+  }, [me.units, me.all_units]);
+
+  const unitLabel = unitLabels[unitIndex] ?? unitLabels[0] ?? 'Sem unidade';
+  const canSwitchUnit = unitLabels.length > 1;
+
   const openAppointment = useCallback((kind: ModalKind) => setModal(kind), []);
-  const cycleUnit = useCallback(() => setUnitIndex((i) => (i + 1) % UNITS.length), []);
+  const cycleUnit = useCallback(() => {
+    setUnitIndex((index) => (index + 1) % unitLabels.length);
+  }, [unitLabels.length]);
 
   const shell = useMemo(
-    () => ({ openAppointment, unit: UNITS[unitIndex] }),
-    [openAppointment, unitIndex],
+    () => ({ openAppointment, unit: unitLabel }),
+    [openAppointment, unitLabel],
   );
 
   return (
     <ShellContext.Provider value={shell}>
       <div className="app-shell">
-        <Sidebar unitIndex={unitIndex} onCycleUnit={cycleUnit} />
+        <Sidebar
+          unitLabel={unitLabel}
+          canSwitchUnit={canSwitchUnit}
+          onCycleUnit={cycleUnit}
+        />
 
         <main className="app-main">
           <Topbar title={TITLES[pathname] ?? 'Navalha'} />

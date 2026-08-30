@@ -1,8 +1,8 @@
 import { Link } from 'react-router-dom';
 
 /**
- * Módulos que o protótipo deixou fora do escopo. Seguem o mesmo padrão de
- * tabela, filtros e formulário da tela de Cadastros.
+ * Modules the prototype left out of scope. They follow the same table, filter
+ * and form pattern as the Records screen.
  */
 export default function ModulePlaceholder({ title }: { title: string }) {
   return (

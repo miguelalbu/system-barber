@@ -5,7 +5,7 @@ import { plans } from '@/data/landing';
 export default function Pricing() {
   const [yearly, setYearly] = useState(false);
 
-  /** No ciclo anual o cliente paga 10 meses; o valor exibido é o equivalente mensal. */
+  /** On the yearly cycle the customer pays 10 months; we show the monthly equivalent. */
   const price = (monthly: number) => (yearly ? Math.round((monthly * 10) / 12) : monthly);
 
   return (

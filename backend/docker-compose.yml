@@ -1,0 +1,79 @@
+name: navalha-backend
+
+# Backend stack: PostgreSQL, Redis and the FastAPI core-api.
+#
+#   core-api  http://localhost:8000  (docs at /docs)
+#   db        localhost:5433
+#   redis     localhost:6380
+#
+# Creates the shared `navalha` network, which the frontend compose joins. Bring
+# this one up first — the frontend expects the network to exist.
+
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: navalha
+      POSTGRES_PASSWORD: navalha
+      POSTGRES_DB: navalha
+    ports:
+      # Host port 5433: 5432 is usually taken by a local Postgres install.
+      - "5433:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      # Creates the unprivileged runtime role (the SQL explains why).
+      - ../infra/postgres/init:/docker-entrypoint-initdb.d:ro
+    networks: [navalha]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U navalha -d navalha"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  redis:
+    # Not used by core-api yet. Arrives with the end-customer OTP, the
+    # availability cache and WhatsApp webhook idempotency.
+    image: redis:7-alpine
+    command: redis-server --save "" --appendonly no
+    ports:
+      - "6380:6379"
+    networks: [navalha]
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  core-api:
+    build: .
+    environment:
+      ENVIRONMENT: dev
+      # Runtime connects with an unprivileged role — that is what makes RLS work.
+      DATABASE_URL: postgresql+asyncpg://navalha_app:navalha_app@db:5432/navalha
+      # Migrations connect as the schema owner.
+      DATABASE_URL_MIGRATIONS: postgresql+asyncpg://navalha:navalha@db:5432/navalha
+      REDIS_URL: redis://redis:6379/0
+      JWT_SECRET: dev-secret-nao-use-em-producao
+      BASE_DOMAIN: navalha.local
+    ports:
+      - "8000:8000"
+    networks: [navalha]
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    command: >
+      sh -c "alembic upgrade head &&
+             uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload"
+    volumes:
+      - ./app:/srv/app
+      - ./alembic:/srv/alembic
+
+networks:
+  navalha:
+    # Fixed name so the frontend compose can join it from another project.
+    name: navalha
+
+volumes:
+  pgdata:

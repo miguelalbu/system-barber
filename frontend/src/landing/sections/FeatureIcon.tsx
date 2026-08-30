@@ -1,6 +1,6 @@
 import type { Feature } from '@/data/landing';
 
-/** Ícones 20×20 das funcionalidades, traçados na cor de acento da landing. */
+/** 20×20 feature icons, stroked in the landing accent color. */
 export default function FeatureIcon({ name }: { name: Feature['icon'] }) {
   const common = {
     width: 20,

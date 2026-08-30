@@ -1,4 +1,4 @@
-/** Ícones de traço 16×16 do protótipo, desenhados com `currentColor`. */
+/** 16×16 stroke icons from the prototype, drawn with `currentColor`. */
 
 export type IconName =
   | 'dashboard'
@@ -14,7 +14,8 @@ export type IconName =
   | 'search'
   | 'bell'
   | 'warning'
-  | 'close';
+  | 'close'
+  | 'logout';
 
 const PATHS: Record<IconName, string> = {
   dashboard: 'M3 9.5 8 4l5 5.5V13a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1z',
@@ -32,6 +33,7 @@ const PATHS: Record<IconName, string> = {
   bell: 'M8 2a4 4 0 0 0-4 4v3l-1.2 2h10.4L12 9V6a4 4 0 0 0-4-4zM6.5 13.2a1.6 1.6 0 0 0 3 0',
   warning: 'M8 2.5 14.5 13.5h-13zM8 6.5v3.2M8 11.6v.2',
   close: 'M4 4l8 8M12 4l-8 8',
+  logout: 'M9.5 2.5h2.5a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1H9.5M9 8H2.5M4.5 5.5 2 8l2.5 2.5',
 };
 
 interface IconProps {

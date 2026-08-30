@@ -1,4 +1,4 @@
-/** Conteúdo da landing page, extraído do protótipo de design. */
+/** Landing page content, extracted from the design prototype. */
 
 export interface Feature {
   title: string;
@@ -88,7 +88,7 @@ export const testimonials = [
 export interface Plan {
   name: string;
   tagline: string;
-  /** Preço mensal em reais; o ciclo anual aplica 2 meses grátis. */
+  /** Monthly price in BRL; the yearly cycle gives 2 months free. */
   monthly: number;
   unit: string;
   items: string[];
@@ -191,7 +191,7 @@ export const darkChat = [
   },
 ];
 
-/** Prévia da agenda do dia mostrada no hero (colunas: Rafael, Léo, Kaio). */
+/** Day-schedule preview shown in the hero (columns: Rafael, Léo, Kaio). */
 export const heroAgenda: Array<{ time: string; cells: Array<{ label: string; sub?: string } | null> }> = [
   { time: '14:30', cells: [{ label: 'Corte · Diego M.' }, { label: 'Barba · Tiago' }, null] },
   { time: '15:30', cells: [{ label: 'Corte + barba · Diego', sub: 'via WhatsApp' }, null, { label: 'Corte · Bruno' }] },
