@@ -151,7 +151,7 @@ keep pointing at a real person.
 | `email` | `string` (email) | sim |  |
 | `role` | [`Role`](#role) | sim |  |
 | `unit_ids` | `string` (uuid)[] | não | Empty means access to every unit |
-| `create_barber` | `boolean` | não | padrão `False`; Also create the calendar column for this user |
+| `barber_id` | `string` (uuid) \| `null` | não | Registered barber this login is linked to on acceptance. Required for the `barber` role; an invite never creates a barber. |
 
 #### InviteLookupIn
 
@@ -178,6 +178,7 @@ What the acceptance page shows before asking for a password.
 | `name` | `string` | sim |  |
 | `email` | `string` (email) | sim |  |
 | `role` | [`Role`](#role) | sim |  |
+| `barber_id` | `string` (uuid) \| `null` | sim |  |
 | `expires_at` | `string` (date-time) | sim |  |
 | `accepted_at` | `string` (date-time) \| `null` | sim |  |
 | `created_at` | `string` (date-time) | sim |  |

@@ -1,4 +1,5 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
+import { queryClient } from '@/shared/api/queryClient';
 import { clearTokens, getTokens, saveTokens } from '@/shared/session/tokens';
 import { setTenantSlug } from '@/shared/session/tenant';
 import * as authApi from '../api/auth.api';
@@ -77,6 +78,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       await authApi.logout(tokens.refreshToken).catch(() => undefined);
     }
     clearTokens();
+    // Cached lists belong to this session (and shop): the next login starts clean.
+    queryClient.clear();
     setMe(null);
     setStatus('anonymous');
   }, []);

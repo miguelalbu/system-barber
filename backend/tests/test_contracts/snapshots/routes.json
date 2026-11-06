@@ -52,6 +52,182 @@
   },
   {
     "dependencies": [
+      "require(team:read)",
+      "current_user",
+      "resolve_tenant",
+      "get_session",
+      "resolve_tenant",
+      "get_session",
+      "resolve_tenant"
+    ],
+    "methods": [
+      "GET"
+    ],
+    "path": "/barbers",
+    "status_code": null
+  },
+  {
+    "dependencies": [
+      "require(team:manage)",
+      "current_user",
+      "resolve_tenant",
+      "get_session",
+      "resolve_tenant",
+      "get_session",
+      "resolve_tenant"
+    ],
+    "methods": [
+      "POST"
+    ],
+    "path": "/barbers",
+    "status_code": 201
+  },
+  {
+    "dependencies": [
+      "require(team:manage)",
+      "current_user",
+      "resolve_tenant",
+      "get_session",
+      "resolve_tenant",
+      "get_session",
+      "resolve_tenant"
+    ],
+    "methods": [
+      "DELETE"
+    ],
+    "path": "/barbers/{barber_id}",
+    "status_code": 204
+  },
+  {
+    "dependencies": [
+      "require(team:read)",
+      "current_user",
+      "resolve_tenant",
+      "get_session",
+      "resolve_tenant",
+      "get_session",
+      "resolve_tenant"
+    ],
+    "methods": [
+      "GET"
+    ],
+    "path": "/barbers/{barber_id}",
+    "status_code": null
+  },
+  {
+    "dependencies": [
+      "require(team:manage)",
+      "current_user",
+      "resolve_tenant",
+      "get_session",
+      "resolve_tenant",
+      "get_session",
+      "resolve_tenant"
+    ],
+    "methods": [
+      "PATCH"
+    ],
+    "path": "/barbers/{barber_id}",
+    "status_code": null
+  },
+  {
+    "dependencies": [
+      "require(team:manage)",
+      "current_user",
+      "resolve_tenant",
+      "get_session",
+      "resolve_tenant",
+      "get_session",
+      "resolve_tenant"
+    ],
+    "methods": [
+      "PUT"
+    ],
+    "path": "/barbers/{barber_id}/services",
+    "status_code": null
+  },
+  {
+    "dependencies": [
+      "require(client:read)",
+      "current_user",
+      "resolve_tenant",
+      "get_session",
+      "resolve_tenant",
+      "get_session",
+      "resolve_tenant"
+    ],
+    "methods": [
+      "GET"
+    ],
+    "path": "/clients",
+    "status_code": null
+  },
+  {
+    "dependencies": [
+      "require(client:write)",
+      "current_user",
+      "resolve_tenant",
+      "get_session",
+      "resolve_tenant",
+      "get_session",
+      "resolve_tenant"
+    ],
+    "methods": [
+      "POST"
+    ],
+    "path": "/clients",
+    "status_code": 201
+  },
+  {
+    "dependencies": [
+      "require(client:write)",
+      "current_user",
+      "resolve_tenant",
+      "get_session",
+      "resolve_tenant",
+      "get_session",
+      "resolve_tenant"
+    ],
+    "methods": [
+      "DELETE"
+    ],
+    "path": "/clients/{client_id}",
+    "status_code": 204
+  },
+  {
+    "dependencies": [
+      "require(client:read)",
+      "current_user",
+      "resolve_tenant",
+      "get_session",
+      "resolve_tenant",
+      "get_session",
+      "resolve_tenant"
+    ],
+    "methods": [
+      "GET"
+    ],
+    "path": "/clients/{client_id}",
+    "status_code": null
+  },
+  {
+    "dependencies": [
+      "require(client:write)",
+      "current_user",
+      "resolve_tenant",
+      "get_session",
+      "resolve_tenant",
+      "get_session",
+      "resolve_tenant"
+    ],
+    "methods": [
+      "PATCH"
+    ],
+    "path": "/clients/{client_id}",
+    "status_code": null
+  },
+  {
+    "dependencies": [
       "core(tenant:read)"
     ],
     "methods": [
@@ -146,6 +322,86 @@
       "GET"
     ],
     "path": "/health",
+    "status_code": null
+  },
+  {
+    "dependencies": [
+      "require(catalog:read)",
+      "current_user",
+      "resolve_tenant",
+      "get_session",
+      "resolve_tenant",
+      "get_session",
+      "resolve_tenant"
+    ],
+    "methods": [
+      "GET"
+    ],
+    "path": "/services",
+    "status_code": null
+  },
+  {
+    "dependencies": [
+      "require(catalog:write)",
+      "current_user",
+      "resolve_tenant",
+      "get_session",
+      "resolve_tenant",
+      "get_session",
+      "resolve_tenant"
+    ],
+    "methods": [
+      "POST"
+    ],
+    "path": "/services",
+    "status_code": 201
+  },
+  {
+    "dependencies": [
+      "require(catalog:write)",
+      "current_user",
+      "resolve_tenant",
+      "get_session",
+      "resolve_tenant",
+      "get_session",
+      "resolve_tenant"
+    ],
+    "methods": [
+      "DELETE"
+    ],
+    "path": "/services/{service_id}",
+    "status_code": 204
+  },
+  {
+    "dependencies": [
+      "require(catalog:read)",
+      "current_user",
+      "resolve_tenant",
+      "get_session",
+      "resolve_tenant",
+      "get_session",
+      "resolve_tenant"
+    ],
+    "methods": [
+      "GET"
+    ],
+    "path": "/services/{service_id}",
+    "status_code": null
+  },
+  {
+    "dependencies": [
+      "require(catalog:write)",
+      "current_user",
+      "resolve_tenant",
+      "get_session",
+      "resolve_tenant",
+      "get_session",
+      "resolve_tenant"
+    ],
+    "methods": [
+      "PATCH"
+    ],
+    "path": "/services/{service_id}",
     "status_code": null
   },
   {

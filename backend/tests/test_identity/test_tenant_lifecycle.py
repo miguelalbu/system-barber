@@ -56,8 +56,10 @@ async def test_archived_shop_looks_unknown(client, core_key, slug):
 
 async def test_schema_behind_the_build_is_not_served(client, core_key, slug, monkeypatch):
     await create_shop(client, core_key, slug, EMAIL, PASSWORD)
-    # Pretend this build expects a newer revision than the one the shop has.
-    monkeypatch.setattr(schema_version, "_older_than_head", lambda: frozenset({"t0001"}))
+    # Pretend this build expects a newer revision than the one the shop has
+    # (the shop is at the real head; treat that head as already old).
+    shop_version = schema_version.expected_tenant_version()
+    monkeypatch.setattr(schema_version, "_older_than_head", lambda: frozenset({shop_version}))
 
     resp = await login(client, slug, EMAIL, PASSWORD)
     assert resp.status_code == 503

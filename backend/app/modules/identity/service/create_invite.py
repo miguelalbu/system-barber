@@ -22,7 +22,7 @@ async def create_invite(
     name: str,
     role: Role,
     unit_ids: list[uuid.UUID],
-    create_barber: bool,
+    barber_id: uuid.UUID | None,
     created_by_id: uuid.UUID | None,
 ) -> tuple[Invite, str]:
     """Store an invite (only the token's hash) and return it with the raw token."""
@@ -35,7 +35,7 @@ async def create_invite(
         expires_at=invite_expiry(),
         created_by_id=created_by_id,
         unit_ids=list(unit_ids),
-        create_barber=create_barber,
+        barber_id=barber_id,
     )
     session.add(record)
     await session.flush()

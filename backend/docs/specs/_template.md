@@ -45,7 +45,8 @@ Erros:
 
 ### Banco de dados
 
-<!-- Tabelas novas: toda tabela de barbearia tem tenant_id + policy RLS (DEC-001). -->
+<!-- Tabelas novas: tabela de barbearia herda TenantBase, sem tenant_id, migration no conjunto
+     alembic/tenant e só expand/contract (DEC-011). -->
 
 ## Permissões
 

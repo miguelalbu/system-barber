@@ -154,3 +154,25 @@ A referência da API é **gerada**, nunca escrita à mão: `scripts/api-docs.ts`
 
 **Consequences:** A documentação de API não envelhece em silêncio — o CI pega a divergência. Texto
 explicativo (o porquê de uma regra) continua na spec, não na referência gerada.
+
+## DEC-010 — TanStack Query adotado com os cadastros; padrão das telas de CRUD
+
+**Date:** 2026-11-06
+**Status:** accepted
+
+**Context:** Os cadastros (barbeiros, serviços, clientes — spec
+`⏳active_frontend-registry-basic-crud.md`) são a primeira feature com dado de servidor além da
+sessão, o gatilho previsto pela DEC-005.
+
+**Decision:** `@tanstack/react-query@5` aprovado e instalado (sem devtools). `QueryClient` único em
+`shared/api/queryClient.ts` (4xx não é repetido; 30 s de `staleTime`), provider em `main.tsx`, cache
+limpo no `signOut`. Cada feature tem `api/<f>.api.ts` (HTTP puro, caminho **literal** — variável vai
+em `query`, para o gerador de `docs/api/`) e `api/<f>.queries.ts` (hooks; mutações invalidam as
+listas, sem atualização otimista). Padrão de tela de CRUD: tabela com `shared/ui/TableState`
+(carregando/vazio/erro), formulário em painel abaixo da tabela com validação local espelhando o
+backend, `shared/ui/DeleteRecordDialog` (apagar → 409 → oferece inativar) e `ConfirmDialog` para
+descartar alterações; filtros, busca e página na URL.
+
+**Consequences:** As próximas telas reais (agenda, financeiro) seguem o mesmo padrão. Atualização
+otimista fica para quando a latência pedir.
+

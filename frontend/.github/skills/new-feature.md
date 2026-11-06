@@ -29,9 +29,11 @@ existente pela API real quando o módulo correspondente chegar no backend.
 ## Passos — trocar o mock pela API real
 
 1. Crie `api/<nome>.api.ts` e substitua os imports de `api/<nome>.mock.ts` nas telas.
-2. Primeira feature a fazer isso instala o TanStack Query (DEC-005): aprovação registrada em
-   `decisions.md`, `QueryClientProvider` em `main.tsx`, `api/<nome>.queries.ts` com os hooks.
-3. Trate os estados de carregando, vazio e erro (`ApiError` traz a mensagem do backend).
+2. Crie `api/<nome>.queries.ts` com os hooks do TanStack Query (já instalado, DEC-010). Modelo:
+   `features/registry/api/registry.queries.ts`. Caminho do `request()` sempre literal; filtro e
+   paginação vão em `query` (senão o gerador de `docs/api/` não casa a chamada com o contrato).
+3. Trate os estados de carregando, vazio e erro com `shared/ui/TableState` (`errorMessage()` traduz
+   o `ApiError`); apagar com `shared/ui/DeleteRecordDialog`.
 4. Apague o `*.mock.ts` quando nenhuma tela o usar e feche a entrada correspondente da ISS-002.
 5. Aplique as permissões do `/auth/me` para esconder ações que o cargo não tem (ISS-005).
 

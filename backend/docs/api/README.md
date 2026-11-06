@@ -9,6 +9,9 @@ Gerada do OpenAPI do código (`app.openapi()` e o contrato do control plane). Pa
 | [Autenticação](auth.md) | Login da equipe, renovação rotativa do token, logout e o perfil da sessão. |
 | [Barbearia](shop.md) | Dados e configuração da barbearia da sessão e as unidades visíveis ao usuário. |
 | [Equipe e convites](team.md) | Membros, convites e o aceite de convite — inclusive o primeiro acesso do dono de uma barbearia recém-provisionada. |
+| [Barbeiros](barbers.md) | Cadastro dos profissionais que atendem (coluna da agenda, comissão). |
+| [Catálogo](catalog.md) | Serviços da barbearia (um preço para todas as unidades, em centavos) e os serviços que cada barbeiro faz. |
+| [Clientes](clients.md) | Clientes da barbearia, compartilhados entre as unidades e identificados pelo telefone em E. |
 | [Infraestrutura](infra.md) | Sondas de saúde. |
 | [Control plane (`/core/*`)](control-plane.md) | Criação e ciclo de vida das barbearias, chamado pelo Core da plataforma. |
 

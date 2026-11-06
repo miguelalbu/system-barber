@@ -1,7 +1,7 @@
 import uuid
 from datetime import datetime
 
-from sqlalchemy import Boolean, DateTime, ForeignKey, Index, String, func
+from sqlalchemy import Boolean, DateTime, ForeignKey, Index, String, false, func
 from sqlalchemy.dialects.postgresql import ARRAY
 from sqlalchemy.dialects.postgresql import UUID as PgUUID
 from sqlalchemy.orm import Mapped, mapped_column
@@ -28,7 +28,17 @@ class Invite(TenantBase):
     unit_ids: Mapped[list[uuid.UUID]] = mapped_column(
         ARRAY(PgUUID(as_uuid=True)), nullable=False, default=list
     )
-    create_barber: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
+    # The registered barber this login is linked to on acceptance (required for
+    # the barber role). An invite never creates a barber: the two registries are
+    # separate (spec registry-basic-crud).
+    barber_id: Mapped[uuid.UUID | None] = mapped_column(
+        PgUUID(as_uuid=True), ForeignKey("barbers.id", ondelete="SET NULL")
+    )
+    # Deprecated and no longer read: kept until the next contract migration so the
+    # previous build keeps working while shops migrate one by one.
+    create_barber: Mapped[bool] = mapped_column(
+        Boolean, nullable=False, default=False, server_default=false()
+    )
 
     created_by_id: Mapped[uuid.UUID | None] = mapped_column(
         PgUUID(as_uuid=True), ForeignKey("users.id", ondelete="SET NULL")

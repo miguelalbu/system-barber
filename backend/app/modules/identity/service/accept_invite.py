@@ -8,22 +8,11 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.exceptions import BadRequest, Conflict
 from app.core.security import hash_password, hash_token
-from app.modules.identity.model import Barber, Role, User, UserUnit
+from app.modules.identity.model import Barber, Invite, Role, User, UserUnit
 from app.modules.identity.repository import invites as invite_repo
-from app.modules.identity.repository import units as unit_repo
 from app.modules.identity.schemas import AcceptInviteIn, MemberOut
 
 INVALID_INVITE = "Convite inválido, expirado ou já utilizado"
-
-
-def initials_of(name: str) -> str:
-    """Two-letter label for a calendar column: "Diego Martins" → "DM"."""
-    parts = [p for p in name.split() if p]
-    if not parts:
-        return "??"
-    if len(parts) == 1:
-        return parts[0][:2].upper()
-    return (parts[0][0] + parts[-1][0]).upper()
 
 
 async def accept_invite(session: AsyncSession, data: AcceptInviteIn) -> MemberOut:
@@ -55,17 +44,23 @@ async def accept_invite(session: AsyncSession, data: AcceptInviteIn) -> MemberOu
     for unit_id in unit_ids:
         session.add(UserUnit(user_id=user.id, unit_id=unit_id))
 
-    barber_id: uuid.UUID | None = None
-    if record.create_barber or record.role is Role.BARBER:
-        unit_id = unit_ids[0] if unit_ids else await unit_repo.first_id(session)
-        barber = Barber(
-            unit_id=unit_id,
-            user_id=user.id,
-            name=user.name,
-            initials=initials_of(user.name),
-        )
-        session.add(barber)
-        await session.flush()
-        barber_id = barber.id
-
+    barber_id = await _link_barber(session, record, user)
     return MemberOut.model_validate(user).model_copy(update={"barber_id": barber_id})
+
+
+async def _link_barber(session: AsyncSession, record: Invite, user: User) -> uuid.UUID | None:
+    """
+    Link the new login to the barber chosen when inviting. Accepting never
+    creates a barber — that registry is separate (spec registry-basic-crud).
+    """
+    barber = await session.get(Barber, record.barber_id) if record.barber_id else None
+    if barber is None:
+        if record.role is Role.BARBER:
+            # The barber was deleted after the invite was sent.
+            raise BadRequest("O barbeiro deste convite não existe mais; peça um novo convite")
+        return None
+    if barber.user_id is not None:
+        raise Conflict("Este barbeiro já tem acesso ao painel")
+    barber.user_id = user.id
+    await session.flush()
+    return barber.id

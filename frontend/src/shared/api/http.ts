@@ -30,8 +30,12 @@ export class NetworkError extends Error {
   }
 }
 
+type QueryValue = string | number | boolean | null | undefined;
+
 interface RequestOptions extends Omit<RequestInit, 'body'> {
   body?: unknown;
+  /** Query string parameters; empty, null and undefined values are left out. */
+  query?: Record<string, QueryValue>;
   /** Skip the Authorization header (login, refresh). */
   anonymous?: boolean;
   /** Internal: prevents a refresh loop when the refresh call itself fails. */
@@ -100,12 +104,25 @@ function refreshSession(): Promise<boolean> {
   return refreshInFlight;
 }
 
+/** `?a=1&b=x` from the defined values, or '' when there are none. */
+export function queryString(query: Record<string, QueryValue> | undefined): string {
+  const params = new URLSearchParams();
+  for (const [key, value] of Object.entries(query ?? {})) {
+    if (value === undefined || value === null || value === '') continue;
+    params.set(key, String(value));
+  }
+  const text = params.toString();
+  return text ? `?${text}` : '';
+}
+
 export async function request<T>(path: string, options: RequestOptions = {}): Promise<T> {
-  const { body, anonymous, retrying, ...init } = options;
+  // The path stays a literal in every *.api.ts (scripts/api-docs.ts matches it
+  // against the contract); variable parts go in `query`.
+  const { body, anonymous, retrying, query, ...init } = options;
 
   let response: Response;
   try {
-    response = await fetch(`${BASE_URL}${path}`, {
+    response = await fetch(`${BASE_URL}${path}${queryString(query)}`, {
       ...init,
       headers: buildHeaders({ ...options, anonymous }),
       body: body === undefined ? undefined : JSON.stringify(body),

@@ -1,6 +1,6 @@
 """Login, refresh rotation, team invites and RBAC boundaries."""
 
-from tests.conftest import auth, create_shop, login
+from tests.conftest import auth, create_shop, login, new_barber
 
 PASSWORD = "owner-password-123"
 EMAIL = "owner@barbershop.com"
@@ -10,11 +10,21 @@ BARBER_PASSWORD = "diego-password-123"
 
 
 async def _invite_barber(client, slug, owner_token) -> str:
-    """Invites Diego as a barber, accepts it, and returns his access token."""
+    """Registers Diego, invites him as a barber linked to that record, returns his token."""
+    barber = await new_barber(client, slug, owner_token)
+    return await _invite_linked(client, slug, owner_token, barber["id"])
+
+
+async def _invite_linked(client, slug, owner_token, barber_id) -> str:
     created = await client.post(
         "/team/invites",
         headers=auth(slug, owner_token),
-        json={"name": "Diego Martins", "email": BARBER_EMAIL, "role": "barber"},
+        json={
+            "name": "Diego Martins",
+            "email": BARBER_EMAIL,
+            "role": "barber",
+            "barber_id": barber_id,
+        },
     )
     assert created.status_code == 201, created.text
     invite_token = created.json()["link"].rsplit("/", 1)[-1]
@@ -83,16 +93,23 @@ async def test_logout_revokes(client, core_key, slug):
     assert after.status_code == 401
 
 
-async def test_invite_creates_barber_with_calendar(client, core_key, slug):
+async def test_barber_invite_links_the_registered_barber(client, core_key, slug):
     await create_shop(client, core_key, slug, EMAIL, PASSWORD)
     owner = (await login(client, slug, EMAIL, PASSWORD)).json()["access_token"]
+    barber = await new_barber(client, slug, owner)
 
     created = await client.post(
         "/team/invites",
         headers=auth(slug, owner),
-        json={"name": "Diego Martins", "email": BARBER_EMAIL, "role": "barber"},
+        json={
+            "name": "Diego Martins",
+            "email": BARBER_EMAIL,
+            "role": "barber",
+            "barber_id": barber["id"],
+        },
     )
     assert created.status_code == 201
+    assert created.json()["invite"]["barber_id"] == barber["id"]
     invite_token = created.json()["link"].rsplit("/", 1)[-1]
 
     accepted = await client.post(
@@ -101,8 +118,11 @@ async def test_invite_creates_barber_with_calendar(client, core_key, slug):
         json={"token": invite_token, "password": BARBER_PASSWORD},
     )
     assert accepted.status_code == 201
-    # The barber role gets a calendar column automatically.
-    assert accepted.json()["barber_id"] is not None
+    # Linked to the existing record — not a second barber.
+    assert accepted.json()["barber_id"] == barber["id"]
+    barbers = (await client.get("/barbers", headers=auth(slug, owner))).json()
+    assert [b["id"] for b in barbers] == [barber["id"]]
+    assert barbers[0]["email"] == BARBER_EMAIL
 
     # An invite works exactly once.
     reuse = await client.post(

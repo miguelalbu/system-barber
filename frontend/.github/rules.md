@@ -50,8 +50,9 @@ Spec: `docs/specs/✅completed_frontend-feature-architecture.md`.
 
 ## State
 
-- Dado do servidor → TanStack Query quando adotado (DEC-005); até lá, `api/*.api.ts` + estado da
-  tela.
+- Dado do servidor → TanStack Query (DEC-005, adotado na DEC-010): `api/<f>.api.ts` com HTTP puro
+  e caminho literal (parte variável em `query`) + `api/<f>.queries.ts` com os hooks; mutação
+  invalida as listas que mudou. `QueryClient` único em `shared/api/queryClient.ts`.
 - Formulário, modal local, aba, editor → estado local ou `useReducer`.
 - Filtro e aba que devem sobreviver a refresh → URL (search params).
 - Context só para provider estável e transversal, e ele mora na feature dona: sessão
@@ -112,15 +113,16 @@ frontend/
 │   │   ├── dashboard/            /app/dashboard (mock)
 │   │   ├── scheduling/           /app/agenda + modal de agendamento (mock)
 │   │   ├── conversations/        /app/conversas (mock)
-│   │   ├── customers/            /app/clientes (placeholder)
-│   │   ├── registry/             /app/cadastros (mock)
+│   │   ├── customers/            /app/clientes (API real)
+│   │   ├── registry/             /app/cadastros — barbeiros e serviços (API real)
 │   │   ├── finance/              /app/financeiro (placeholder)
 │   │   └── design-system/        /app/tokens — documentação viva dos tokens
 │   └── shared/
-│       ├── api/http.ts           cliente HTTP
+│       ├── api/                  http.ts · queryClient.ts · errorMessage.ts
 │       ├── session/              tokens.ts · tenant.ts
-│       ├── ui/                   Icon · Badge/Tag · ModulePlaceholder
-│       ├── text/                 initials.ts
+│       ├── ui/                   Icon · Badge/Tag · ModulePlaceholder · ConfirmDialog ·
+│       │                         DeleteRecordDialog · TableState
+│       ├── text/                 initials · money · duration · phone
 │       └── styles/               tokens.css · global.css · panel.css
 ├── tests/                        Vitest
 ├── docs/                         ENVIRONMENT_VARIABLES.md

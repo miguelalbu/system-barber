@@ -7,7 +7,7 @@ Estados: `stable` · `in progress` · `blocked` · `planned` · `deprecated`.
 
 | Feature | Rota | Estado | Atualizado | Notas |
 |---|---|---|---|---|
-| Arquitetura por feature | — | stable | 2026-11-05 | Spec `✅completed_frontend-feature-architecture.md`. `features/` + `shared/` + `app/`; fronteiras no ESLint (provadas com violações de propósito); Vitest com 10 testes. |
+| Arquitetura por feature | — | stable | 2026-11-05 | Spec `✅completed_frontend-feature-architecture.md`. `features/` + `shared/` + `app/`; fronteiras no ESLint (provadas com violações de propósito); Vitest. |
 | `auth` — primeiro acesso / convite | `/convite/:token` | stable | 2026-11-05 | **API real.** Valida o link antes de pedir a senha, aceita e entra. Spec `✅completed_frontend-invite-acceptance.md`. Não conferida em navegador ainda. |
 | `auth` — sessão e login | `/entrar` | stable | 2026-11-05 | **API real.** Login, `/auth/me`, renovação única em 401, logout, guarda de rota com retorno ao destino, slug da barbearia em localhost. Spec `✅completed_frontend-auth-session.md`. |
 | `auth` — seleção de unidade | sidebar | stable | 2026-11-05 | Unidades reais do `/auth/me`; opção "Todas as unidades" para quem vê várias. Ainda não filtra nenhum dado (as telas são mock). |
@@ -16,8 +16,8 @@ Estados: `stable` · `in progress` · `blocked` · `planned` · `deprecated`.
 | `scheduling` — modal de agendamento | painel | in progress | 2026-11-05 | Origem IA (pré-preenchido) ou manual; não salva nada ainda. |
 | `dashboard` | `/app/dashboard` | in progress | 2026-11-05 | KPIs, próximos, ocupação, conversas — tudo mock. |
 | `conversations` — Central | `/app/conversas` | in progress | 2026-11-05 | Lista, thread e ficha do cliente — mock. Aguarda WhatsApp + `ai-agent`. |
-| `registry` — Cadastros | `/app/cadastros` | in progress | 2026-11-05 | Aba Barbeiros com tabela e formulário — mock. As outras abas (Unidades, Serviços, Clubes, Planos) não existem. |
-| `customers` — Clientes | `/app/clientes` | planned | 2026-11-05 | Placeholder. |
+| `registry` — Cadastros | `/app/cadastros` | in progress | 2026-11-06 | **API real.** Abas Barbeiros (filtros na URL, serviços habilitados, vínculo opcional com login) e Serviços (duração, preço em reais → centavos). Unidades, Clubes e Planos: "em breve". Spec `⏳active_frontend-registry-basic-crud.md`; falta conferir no navegador (ISS-010). |
+| `customers` — Clientes | `/app/clientes` | in progress | 2026-11-06 | **API real.** Busca com espera de 300 ms e página na URL, telefone com máscara e E.164, inativar/apagar. Spec `⏳active_frontend-registry-basic-crud.md`; falta conferir no navegador (ISS-010). |
 | `finance` — Financeiro | `/app/financeiro` | planned | 2026-11-05 | Placeholder. |
 | `design-system` — Tokens | `/app/tokens` | stable | 2026-11-05 | Documentação viva de `tokens.css`. |
 

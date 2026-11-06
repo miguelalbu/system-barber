@@ -42,8 +42,8 @@ npm run check      # lint + typecheck + test
 | `/app/dashboard`   | KPIs, próximos agendamentos, ocupação, conversas  |
 | `/app/agenda`      | Agenda do dia por barbeiro                        |
 | `/app/conversas`   | Central de conversas (WhatsApp + IA)              |
-| `/app/clientes`    | Placeholder (fora do escopo do protótipo)         |
-| `/app/cadastros`   | Cadastro de barbeiros com formulário              |
+| `/app/clientes`    | Clientes: busca, cadastro e edição — **API real** |
+| `/app/cadastros`   | Barbeiros e serviços — **API real**               |
 | `/app/financeiro`  | Placeholder (fora do escopo do protótipo)         |
 | `/app/tokens`      | Documentação do design system                     |
 
@@ -104,7 +104,7 @@ passo para criar uma barbearia em dev:
 
 ## Dados que ainda são mock
 
-O restante do painel (agenda, conversas, cadastros) continua com os dados de
+O restante do painel (agenda, dashboard, conversas) continua com os dados de
 `src/features/<f>/api/*.mock.ts`, porque esses módulos ainda não existem no
 backend. Cada módulo novo do backend troca o mock da feature correspondente por
 um `*.api.ts` real — passo a passo em `.github/skills/new-feature.md`.

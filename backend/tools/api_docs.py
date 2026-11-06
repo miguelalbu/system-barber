@@ -62,6 +62,24 @@ PUBLIC_GROUPS: dict[str, Group] = {
         "Membros, convites e o aceite de convite — inclusive o primeiro acesso do dono de "
         "uma barbearia recém-provisionada.",
     ),
+    "barbers": Group(
+        "barbers.md",
+        "Barbeiros",
+        "Cadastro dos profissionais que atendem (coluna da agenda, comissão). Separado do "
+        "cadastro de usuários com acesso ao painel: um não cria o outro, e o vínculo é opcional.",
+    ),
+    "catalog": Group(
+        "catalog.md",
+        "Catálogo",
+        "Serviços da barbearia (um preço para todas as unidades, em centavos) e os serviços "
+        "que cada barbeiro faz.",
+    ),
+    "clients": Group(
+        "clients.md",
+        "Clientes",
+        "Clientes da barbearia, compartilhados entre as unidades e identificados pelo "
+        "telefone em E.164.",
+    ),
     "infra": Group("infra.md", "Infraestrutura", "Sondas de saúde."),
 }
 CORE_GROUP = Group(

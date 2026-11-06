@@ -280,3 +280,29 @@ A referência da API é **gerada**, nunca escrita à mão: `tools/api_docs.py` g
 
 **Consequences:** A documentação de API não envelhece em silêncio — o CI pega a divergência. Texto
 explicativo (o porquê de uma regra) continua na spec, não na referência gerada.
+
+## DEC-016 — Cadastros básicos: barbeiro ≠ usuário, apagar só sem histórico, telefone E.164
+
+**Date:** 2026-11-06
+**Status:** accepted
+
+**Context:** Primeiro bloco de domínio (spec `✅completed_registry-basic-crud.md`): CRUD de
+barbeiros, serviços e clientes. O dono do produto decidiu que o cadastro de barbeiros é separado do
+de usuários com acesso ao painel; o convite com cargo `barber` criava um barbeiro sozinho.
+
+**Decision:**
+- **Barbeiro ≠ usuário.** Nenhum dos dois cria o outro; o vínculo é opcional e explícito — convite
+  com `barber_id` (o aceite liga) ou `user_id` no cadastro do barbeiro. Convite `barber` exige
+  `barber_id`; `create_barber` saiu do contrato (a coluna sai numa migration de contract).
+- **Apagar (P1):** `DELETE` remove de verdade enquanto não há histórico; o histórico futuro
+  referencia com `ON DELETE RESTRICT` e o `IntegrityError` vira `409` → o caminho é inativar.
+- **Cliente** é da barbearia, não da unidade (P3), com telefone obrigatório e único em E.164 (P2).
+- **Serviço** tem preço único para todas as unidades (P4), em centavos inteiros (P6); só quem vê
+  todas as unidades escreve.
+- **Módulos:** `catalog` (serviços + `barber_services`) e `clients` novos; `/barbers` fica no
+  `identity` (DEC-007 mantida: mover criaria ciclo). Novo contrato do import-linter: o `identity`
+  não importa módulo de domínio.
+
+**Consequences:** Os limites de plano (barbeiros e unidades por plano) vão contar o cadastro de
+barbeiros, não os logins. A lista de clientes do barbeiro (`own`) fica vazia até a agenda existir.
+

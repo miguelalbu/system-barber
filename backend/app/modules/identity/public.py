@@ -26,6 +26,7 @@ from app.modules.identity.service.bootstrap_tenant import (
     issue_owner_invite,
     reissue_owner_invite,
 )
+from app.modules.identity.service.get_barber import get_barber
 from app.modules.identity.service.seed_platform_admin import (
     DEFAULT_NAME as DEFAULT_PLATFORM_ADMIN_NAME,
 )
@@ -49,6 +50,7 @@ __all__ = [
     "TenantDep",
     "TenantStatus",
     "bootstrap_tenant",
+    "get_barber",
     "issue_owner_invite",
     "reissue_owner_invite",
     "require",

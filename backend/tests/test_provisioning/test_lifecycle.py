@@ -3,6 +3,7 @@
 from sqlalchemy import text
 
 from app.core.database import migrator_engine
+from app.core.schema_version import expected_tenant_version
 from app.modules.provisioning.service import run_provisioning_job as job_module
 from tests.conftest import accept, core, create_shop, login, provision, track
 
@@ -34,7 +35,7 @@ async def test_provisioning_builds_the_shop_and_delivers_the_link_once(client, c
     first = (await client.get(f"/core/tenants/{tenant_id}", headers=core(core_key))).json()
     assert first["status"] == "active"
     assert first["schema_name"] == f"tenant_{slug}"
-    assert first["schema_version"] == "t0001"
+    assert first["schema_version"] == expected_tenant_version()
     assert first["job"]["status"] == "succeeded"
     assert first["invite_link"].endswith(first["invite_link"].rsplit("/", 1)[-1])
     assert await _schema_exists(f"tenant_{slug}") == (True, True)

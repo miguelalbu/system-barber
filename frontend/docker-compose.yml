@@ -31,4 +31,7 @@ services:
 
 networks:
   navalha:
+    # Owned by the backend compose; declaring it here as our own made whichever
+    # project started first claim it (compose then warns on the other one).
     name: navalha
+    external: true

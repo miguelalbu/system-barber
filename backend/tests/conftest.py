@@ -28,6 +28,10 @@ from app.modules.provisioning.dependencies import READ_LIMIT, WRITE_LIMIT
 
 ALL_SCOPES = ["tenant:read", "tenant:provision", "tenant:destroy"]
 
+OWNER_EMAIL = "owner@barbershop.com"
+OWNER_PASSWORD = "owner-password-123"
+MEMBER_PASSWORD = "member-password-123"
+
 # Slugs created during this run, destroyed at the end.
 _created_slugs: set[str] = set()
 
@@ -193,3 +197,57 @@ async def login(client: AsyncClient, slug: str, email: str, password: str):
 
 def auth(slug: str, token: str) -> dict[str, str]:
     return {"X-Tenant-Slug": slug, "Authorization": f"Bearer {token}"}
+
+
+async def owner_token(client: AsyncClient, core_key: str, slug: str) -> str:
+    """A ready shop and its owner's access token."""
+    await create_shop(client, core_key, slug, OWNER_EMAIL, OWNER_PASSWORD)
+    return (await login(client, slug, OWNER_EMAIL, OWNER_PASSWORD)).json()["access_token"]
+
+
+async def new_barber(
+    client: AsyncClient, slug: str, token: str, name: str = "Diego Martins", **extra
+):
+    """Register a barber (no login) in the shop's first unit unless `unit_id` is given."""
+    if "unit_id" not in extra:
+        units = (await client.get("/tenant/units", headers=auth(slug, token))).json()
+        extra["unit_id"] = units[0]["id"]
+    resp = await client.post("/barbers", headers=auth(slug, token), json={"name": name, **extra})
+    assert resp.status_code == 201, resp.text
+    return resp.json()
+
+
+async def member_token(
+    client: AsyncClient,
+    slug: str,
+    token: str,
+    *,
+    role: str,
+    email: str,
+    unit_ids: list[str] | None = None,
+    barber_id: str | None = None,
+) -> str:
+    """Invite someone with this role, accept the invite and return their access token."""
+    body: dict = {"name": f"Member {role}", "email": email, "role": role}
+    if unit_ids is not None:
+        body["unit_ids"] = unit_ids
+    if barber_id is not None:
+        body["barber_id"] = barber_id
+    created = await client.post("/team/invites", headers=auth(slug, token), json=body)
+    assert created.status_code == 201, created.text
+    accepted = await accept(client, slug, created.json()["link"], MEMBER_PASSWORD)
+    assert accepted.status_code == 201, accepted.text
+    return (await login(client, slug, email, MEMBER_PASSWORD)).json()["access_token"]
+
+
+async def add_unit(slug: str, name: str) -> str:
+    """A second unit, straight in the shop's schema (no route creates units yet)."""
+    from app.core.database import tenant_session
+    from app.modules.identity.model import Unit
+    from app.modules.identity.public import schema_name_for
+
+    async with tenant_session(schema_name_for(slug)) as session:
+        unit = Unit(name=name)
+        session.add(unit)
+        await session.flush()
+        return str(unit.id)

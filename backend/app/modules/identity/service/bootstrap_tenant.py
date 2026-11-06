@@ -36,7 +36,7 @@ async def issue_owner_invite(
         name=owner_name,
         role=Role.OWNER,
         unit_ids=[],
-        create_barber=False,
+        barber_id=None,
         created_by_id=None,
     )
     return invite_link(tenant, token)

@@ -59,3 +59,14 @@ async def latest_by_role(session: AsyncSession, role: Role) -> Invite | None:
             select(Invite).where(Invite.role == role).order_by(Invite.created_at.desc()).limit(1)
         )
     ).scalar_one_or_none()
+
+
+async def pending_for_barber(session: AsyncSession, barber_id, *, now: datetime) -> bool:
+    stmt = (
+        select(Invite.id)
+        .where(Invite.barber_id == barber_id)
+        .where(Invite.accepted_at.is_(None))
+        .where(Invite.expires_at > now)
+        .limit(1)
+    )
+    return (await session.execute(stmt)).first() is not None

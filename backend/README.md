@@ -237,11 +237,24 @@ PATCH  /tenant                    nome e domínio próprio       [tenant:configu
 GET    /tenant/units              unidades visíveis
 
 GET    /team                      membros                      [team:read]
-POST   /team/invites              convida                      [team:manage]
+POST   /team/invites              convida (cargo barber: barber_id) [team:manage]
 GET    /team/invites              pendentes                    [team:read]
 POST   /team/invites/lookup       descreve um convite sem gastá-lo (público)
 POST   /team/invites/accept       cria o login (público) — também o 1º acesso do dono
 DELETE /team/{user_id}            desativa                     [team:manage]
+
+GET    /barbers                   barbeiros (escopo de unidade) [team:read]
+POST   /barbers                   cadastra (não cria login)     [team:manage]
+GET    /barbers/{id}                                            [team:read]
+PATCH  /barbers/{id}              edita; user_id liga/desliga   [team:manage]
+DELETE /barbers/{id}              só sem histórico e sem login  [team:manage]
+PUT    /barbers/{id}/services     serviços habilitados          [team:manage]
+
+GET    /services                  serviços                      [catalog:read]
+POST   /services · PATCH · DELETE /services/{id}  (todas as unidades) [catalog:write]
+
+GET    /clients?q=&limit=&offset= busca paginada                [client:read]
+POST   /clients · PATCH · DELETE /clients/{id}                  [client:write]
 
 GET    /health
 

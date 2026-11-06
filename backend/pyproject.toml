@@ -64,7 +64,12 @@ ignore_imports = ["app.core.model_registry -> app.modules.*.model"]
 [[tool.importlinter.contracts]]
 name = "inside a module, layers point down: router -> service -> repository -> model"
 type = "layers"
-containers = ["app.modules.identity", "app.modules.provisioning"]
+containers = [
+    "app.modules.identity",
+    "app.modules.provisioning",
+    "app.modules.catalog",
+    "app.modules.clients",
+]
 layers = ["router", "service", "repository", "model"]
 
 [[tool.importlinter.contracts]]
@@ -72,3 +77,9 @@ name = "modules never import the composition roots"
 type = "forbidden"
 source_modules = ["app.modules"]
 forbidden_modules = ["app.main", "app.management"]
+
+[[tool.importlinter.contracts]]
+name = "identity is the bottom module: it imports no domain module"
+type = "forbidden"
+source_modules = ["app.modules.identity"]
+forbidden_modules = ["app.modules.catalog", "app.modules.clients", "app.modules.provisioning"]

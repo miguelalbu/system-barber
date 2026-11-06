@@ -147,6 +147,15 @@ class AuthContext:
         """The units to filter by, or None when the user sees the whole shop."""
         return None if self.all_units else self.units
 
+    @property
+    def scoped_units(self) -> list[uuid.UUID] | None:
+        """`unit_filter` under the resolved scope: an `all` permission ignores linked units."""
+        return None if self.scope is Scope.ALL else self.unit_filter
+
+    def reaches_unit(self, unit_id: uuid.UUID) -> bool:
+        units = self.scoped_units
+        return units is None or unit_id in units
+
 
 def _bearer(authorization: str | None) -> str:
     if not authorization or not authorization.lower().startswith("bearer "):

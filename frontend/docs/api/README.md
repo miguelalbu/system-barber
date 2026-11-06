@@ -7,10 +7,12 @@ Quais endpoints do backend cada feature chama, casados com o contrato congelado 
 | Feature | Chamadas |
 |---|---|
 | [`auth`](auth.md) | 5 |
+| [`customers`](customers.md) | 4 |
+| [`registry`](registry.md) | 11 |
 | [`shared`](shared.md) | 1 |
 
 ## Ainda sobre dados de demonstração
 
-Features com `api/*.mock.ts` (sem módulo no backend ainda): `conversations`, `dashboard`, `registry`, `scheduling`.
+Features com `api/*.mock.ts` (sem módulo no backend ainda): `conversations`, `dashboard`, `scheduling`.
 
 Todas as chamadas passam por `src/shared/api/http.ts` (base `/api`, `X-Tenant-Slug` em dev, bearer e renovação de token).
