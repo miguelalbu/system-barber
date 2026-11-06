@@ -24,7 +24,7 @@ mudar uma decisão, crie outra e marque a antiga como `superseded by DEC-NNN`.
 ## DEC-001 — Multi-tenant em banco compartilhado com Row-Level Security
 
 **Date:** 2026-11-05 (registro retroativo; a decisão é da migration 0001)
-**Status:** accepted
+**Status:** superseded by DEC-011
 
 **Context:** SaaS de barbearias: muitas barbearias pequenas, dados que nunca podem vazar entre elas,
 e a porta aberta para uma barbearia grande ganhar banco próprio no futuro.
@@ -47,7 +47,7 @@ tenant tiver banco próprio — é o que torna essa migração possível.
 ## DEC-002 — O tenant vem do domínio de acesso
 
 **Date:** 2026-11-05 (retroativo)
-**Status:** accepted
+**Status:** accepted — reafirmada em DEC-011 (subdomínio personalizado por barbearia)
 
 **Context:** Login precisa saber de qual barbearia é o usuário; e-mail precisa poder repetir entre
 barbearias.
@@ -118,7 +118,7 @@ conversas) transformariam cada arquivo plano num depósito de domínios.
 model/` + `schemas.py` + `public.py`. Divergências do Clara, deliberadas: `cache/` e `jobs/` só
 quando o módulo usar Redis/worker (o Clara exige as seis pastas sempre); `dependencies.py` opcional
 na raiz do módulo para as dependências FastAPI. Spec:
-`specs/✅completed_backend-modular-architecture.md`.
+`docs/specs/✅completed_backend-modular-architecture.md`.
 
 **Consequences:** Um pouco mais de arquivos por funcionalidade; em troca, cada domínio novo tem
 lugar óbvio e fronteiras verificadas por `lint-imports` e testes.
@@ -182,3 +182,101 @@ toca os dois lados existe nas duas pastas, uma apontando para a outra.
 
 **Consequences:** O contexto que a IA carrega continua focado num projeto. O CI é um só, com jobs
 separados por projeto.
+
+## DEC-011 — Schema por barbearia, no desenho do ClaraCRM v2
+
+**Date:** 2026-11-05
+**Status:** accepted (substitui DEC-001)
+
+**Context:** Pedido do dono do produto: seguir a arquitetura multi-tenant do ClaraCRM
+(`docs/multi-tenant-architecture-v2.md`) — schema por tenant, `public` só de controle — com uma
+mudança: o acesso continua por **subdomínio personalizado por barbearia** (e domínio próprio), em vez
+da URL única do ClaraCRM.
+
+**Options considered:**
+1. Manter RLS em tabelas compartilhadas (DEC-001) — já funcionava, mas diverge da plataforma.
+2. Schema por tenant com URL única e login por e-mail (doc exato) — perde o subdomínio que o produto
+   quer oferecer a cada barbearia.
+3. Schema por tenant com o tenant vindo do host (doc com §1/§4 adaptados).
+
+**Decision:** Opção 3. `public` tem só controle (`tenants`, `platform_admins`, `core_keys`,
+`provisioning_jobs`, `core_audit_log`); cada barbearia tem `tenant_<slug>` com as próprias tabelas e
+enums, sem `tenant_id` e sem FK entre schemas. Os models de barbearia ficam sob o schema-marcador
+`tenant`, trocado em runtime por `schema_translate_map` — equivalente SQLAlchemy da opção `schema` do
+adapter do Prisma: **nenhum `SET search_path` em sessão de request**, um pool único, engines finos por
+schema em cache. Fora de uma sessão de tenant, uma tabela de barbearia aponta para o schema `tenant`
+(que não existe) e falha, em vez de cair no `public`. O tenant vem do host; o JWT carrega `tid` e é
+recusado em outro host. O slug segue regras de DNS (com hífen); o schema é derivado uma vez
+(`-` → `_`), gravado em `tenants.schema_name` e revalidado por regex antes de qualquer uso.
+
+**Consequences:** RLS deixou de existir (o isolamento é a qualificação de schema, provada por teste).
+Dois conjuntos de migrations (`alembic/control`, `alembic/tenant`). E-mail único por barbearia (cada
+uma tem sua tabela `users`). Diretório global de login do doc não é necessário. O banco de dev antigo
+foi preservado no schema `legacy_rls_v1` (ISS-011).
+
+## DEC-012 — Banco endurecido: app sem DDL, migrator separado, role por barbearia
+
+**Date:** 2026-11-05
+**Status:** accepted
+
+**Decision:** O role de runtime (`navalha_app`, o usuário da `DATABASE_URL`) tem só `USAGE` + DML
+nas tabelas que usa; o `PUBLIC` perde todo acesso ao schema `public`. O dono do schema (migrator,
+`DATABASE_URL_MIGRATIONS`) faz migrations, o DDL do provisionamento e o CLI de chaves. Cada barbearia
+ganha um role `tenant_<slug>` `NOLOGIN`, restrito ao próprio schema, para acesso fora de banda.
+`SET LOCAL ROLE` por request **não** é usado: como o doc concluiu, role e schema sairiam do mesmo
+contexto e um bug erraria os dois na mesma direção.
+
+**Consequences:** Um SQL cru com bug não consegue criar nem derrubar tabela (testado). A API guarda a
+credencial de migrator para provisionar (ISS-013).
+
+## DEC-013 — Ciclo de vida do tenant, `schema_version` e migrations fora do boot
+
+**Date:** 2026-11-05
+**Status:** accepted
+
+**Decision:** Status operacional `provisioning | active | failed | suspended | archived` (cobrança é
+do Core, não daqui). Só `active` é servido: `suspended` → 403, `provisioning`/`failed` → 503,
+`archived` → 404 como desconhecido. `tenants.schema_version` guarda o que o `alembic_version` do
+schema diz; a API recusa (503) schema **atrás** do head do build, lido da pasta
+`alembic/tenant` (versão à frente ou nunca registrada é servida). Migrations saem do boot: serviço
+one-shot `migrate` no compose e `python -m app.management.migrate --apply` (controle, depois cada
+tenant, sequencial e fail-fast). Só migrations expand/contract no conjunto de tenant.
+
+**Consequences:** Uma barbearia nunca é servida com schema meio migrado; o deploy precisa rodar o
+migrate antes de trocar as instâncias.
+
+## DEC-014 — Barbearias nascem só pelo control plane (`X-Core-Key`)
+
+**Date:** 2026-11-05
+**Status:** accepted
+
+**Context:** No futuro, um Core de plataforma controla os tenants e os ambientes de cada cliente, e a
+criação acontece pelos administradores a partir da venda de planos.
+
+**Decision:** `POST /auth/register-shop` foi removido. `/core/tenants` (fora do `/docs` público,
+OpenAPI próprio em `/core/openapi.json`) provisiona por job assíncrono (202), idempotente por slug e
+por `Idempotency-Key`; suspende, reativa, retoma, reemite o convite e exclui (quatro portões). A
+credencial é `X-Core-Key`: SHA-256, escopos (`tenant:read`, `tenant:provision`, `tenant:destroy`),
+allowlist de IP, rate limit por processo e auditoria de toda chamada, inclusive as negadas. A primeira
+chave nasce por CLI com credencial de banco. A senha do dono nunca está no contrato: o job gera um
+convite de primeiro acesso (entregue uma vez) e a pessoa define a senha em `/convite/<token>`.
+
+**Consequences:** A landing não cadastra mais barbearias (capta lead). `external_tenant_id` guarda o id
+do Core. `platform_admins` (DEC-003) continua, sem login, para o futuro painel de suporte.
+
+## DEC-015 — `docs/` do projeto: `specs/` para planejamento e `api/` gerada
+
+**Date:** 2026-11-06
+**Status:** accepted
+
+**Context:** As specs viviam em `.github/specs/` (modelo Clara), misturadas com o que só orienta a
+IA, e não havia referência da API. Pedido do dono do produto: cada projeto organiza a própria
+`docs/` com `specs/` e `api/`, separados, para documentar durante o desenvolvimento com as specs
+escritas antes, no planejamento.
+
+**Decision:** Specs em `backend/docs/specs/` (espelho em `frontend/docs/specs/` quando a
+funcionalidade toca os dois lados). A `.github/` fica com regras, memória e skills, e aponta para lá.
+A referência da API é **gerada**, nunca escrita à mão: `tools/api_docs.py` gera `docs/api/` do `app.openapi()` e do contrato do control plane, com a guarda de cada rota (permissão ou escopo do Core) lida da cadeia de dependências; `test_api_docs.py` falha se divergir. `make docs-api` regenera os dois lados.
+
+**Consequences:** A documentação de API não envelhece em silêncio — o CI pega a divergência. Texto
+explicativo (o porquê de uma regra) continua na spec, não na referência gerada.

@@ -1,5 +1,8 @@
 /** Session domain types, mirroring `GET /auth/me` (backend `MeOut`). */
 
+/** Operational lifecycle of a shop (backend DEC-013). Only `active` is ever served. */
+export type TenantStatus = 'provisioning' | 'active' | 'failed' | 'suspended' | 'archived';
+
 export type UserRole = 'owner' | 'manager' | 'receptionist' | 'barber';
 
 /** Reach of a permission, mirroring the backend's Scope enum. */
@@ -20,7 +23,7 @@ export interface AuthTenant {
   name: string;
   custom_domain: string | null;
   plan: string;
-  status: 'trial' | 'active' | 'suspended' | 'canceled';
+  status: TenantStatus;
   created_at: string;
 }
 
@@ -38,4 +41,12 @@ export interface Me {
   units: AuthUnit[];
   all_units: boolean;
   permissions: Record<string, PermissionScope>;
+}
+
+/** A valid invite, as `POST /team/invites/lookup` describes it (backend `InviteLookupOut`). */
+export interface InviteLookup {
+  name: string;
+  email: string;
+  role: UserRole;
+  expires_at: string;
 }

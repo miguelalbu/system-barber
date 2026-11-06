@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import re
 import uuid
 from datetime import datetime
 
@@ -10,41 +9,14 @@ from pydantic import BaseModel, ConfigDict, EmailStr, Field, field_validator
 
 from app.modules.identity.model.enums import Role, TenantStatus
 
-SLUG_RE = re.compile(r"^[a-z0-9](?:[a-z0-9-]{1,61}[a-z0-9])$")
-
-RESERVED_SLUGS = {"www", "app", "api", "admin", "painel", "static", "assets"}
-
 
 class Schema(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
 
 # --------------------------------------------------------------------------- #
-# Provisioning
+# Shop
 # --------------------------------------------------------------------------- #
-
-
-class RegisterShop(BaseModel):
-    shop_name: str = Field(min_length=2, max_length=120)
-    slug: str = Field(min_length=3, max_length=63)
-    unit_name: str = Field(default="Unidade principal", max_length=120)
-
-    owner_name: str = Field(min_length=2, max_length=120)
-    email: EmailStr
-    password: str = Field(min_length=8, max_length=128)
-
-    @field_validator("slug")
-    @classmethod
-    def _valid_slug(cls, v: str) -> str:
-        v = v.lower().strip()
-        if not SLUG_RE.match(v):
-            raise ValueError(
-                "slug deve ter 3+ caracteres, só letras minúsculas, números e hífen, "
-                "sem começar nem terminar com hífen"
-            )
-        if v in RESERVED_SLUGS:
-            raise ValueError("slug reservado")
-        return v
 
 
 class TenantOut(Schema):
@@ -108,13 +80,6 @@ class MeOut(BaseModel):
     permissions: dict[str, str]
 
 
-class RegistrationOut(BaseModel):
-    tenant: TenantOut
-    user: UserOut
-    tokens: TokensOut
-    panel_url: str
-
-
 # --------------------------------------------------------------------------- #
 # Team
 # --------------------------------------------------------------------------- #
@@ -169,3 +134,16 @@ class MemberOut(Schema):
     active: bool
     last_login_at: datetime | None
     barber_id: uuid.UUID | None = None
+
+
+class InviteLookupIn(BaseModel):
+    token: str
+
+
+class InviteLookupOut(Schema):
+    """What the acceptance page shows before asking for a password."""
+
+    name: str
+    email: EmailStr
+    role: Role
+    expires_at: datetime

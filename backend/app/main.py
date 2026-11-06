@@ -11,6 +11,7 @@ from app.core.config import settings
 from app.core.database import engine
 from app.core.exceptions import register_exception_handlers
 from app.modules.identity.router import routers as identity_routers
+from app.modules.provisioning.router import routers as provisioning_routers
 
 
 @asynccontextmanager
@@ -23,8 +24,8 @@ app = FastAPI(
     title="Navalha · Core API",
     version="0.1.0",
     description=(
-        "System of record for the barbershop SaaS. Multi-tenant with Row-Level "
-        "Security isolation; the tenant is resolved from the access domain."
+        "System of record for the barbershop SaaS. Multi-tenant with one PostgreSQL "
+        "schema per shop; the shop is resolved from its access domain."
     ),
     lifespan=lifespan,
 )
@@ -45,7 +46,7 @@ app.add_middleware(
 
 register_exception_handlers(app)
 
-for router in identity_routers:
+for router in [*identity_routers, *provisioning_routers]:
     app.include_router(router)
 
 

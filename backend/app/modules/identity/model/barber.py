@@ -7,13 +7,13 @@ from sqlalchemy import Boolean, ForeignKey, Index, Numeric, String, UniqueConstr
 from sqlalchemy.dialects.postgresql import UUID as PgUUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from app.core.model_base import Base, TenantMixin, TimestampMixin, uuid_pk
+from app.core.model_base import TenantBase, TimestampMixin, uuid_pk
 
 if TYPE_CHECKING:
     from app.modules.identity.model.user import User
 
 
-class Barber(Base, TenantMixin, TimestampMixin):
+class Barber(TenantBase, TimestampMixin):
     """
     The professional as a **scheduling resource**: a column on the calendar, a
     commission, a set of services.
@@ -28,7 +28,7 @@ class Barber(Base, TenantMixin, TimestampMixin):
     __tablename__ = "barbers"
     __table_args__ = (
         UniqueConstraint("user_id", name="uq_barber_user"),
-        Index("ix_barber_tenant_unit", "tenant_id", "unit_id"),
+        Index("ix_barber_unit", "unit_id"),
     )
 
     id: Mapped[uuid.UUID] = uuid_pk()

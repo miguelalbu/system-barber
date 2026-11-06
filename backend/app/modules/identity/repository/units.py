@@ -29,3 +29,7 @@ async def existing_ids(session: AsyncSession, unit_ids: Iterable[uuid.UUID]) -> 
 async def first_id(session: AsyncSession) -> uuid.UUID:
     """The oldest unit — the default home for a barber invited without one."""
     return (await session.execute(select(Unit.id).order_by(Unit.created_at).limit(1))).scalar_one()
+
+
+async def any_exists(session: AsyncSession) -> bool:
+    return (await session.execute(select(Unit.id).limit(1))).first() is not None

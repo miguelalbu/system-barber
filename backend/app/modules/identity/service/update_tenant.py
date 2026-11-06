@@ -15,8 +15,8 @@ async def update_tenant(session: AsyncSession, tenant_id: uuid.UUID, data: Tenan
     """
     Rename the shop or point a custom domain at it.
 
-    `tenants` is control plane and has no RLS, so this runs on a platform
-    session carrying no tenant — which is why the lookup is by explicit id.
+    `tenants` is the control plane catalog, so this runs on a control session;
+    the row is found by the id of the shop the caller is signed into.
     """
     tenant = await tenant_repo.get_by_id(session, tenant_id)
 

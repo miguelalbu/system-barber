@@ -1,4 +1,4 @@
-"""`tenants` is control plane: no RLS, so every query here filters explicitly."""
+"""`tenants` is the control plane catalog (`public`): every query filters explicitly."""
 
 import uuid
 

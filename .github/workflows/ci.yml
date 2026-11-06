@@ -34,7 +34,7 @@ jobs:
 
     env:
       ENVIRONMENT: dev
-      # Runtime as the unprivileged role, so the suite exercises RLS for real (DEC-001).
+      # Runtime as the role without DDL, so the suite exercises the real grants (DEC-012).
       DATABASE_URL: postgresql+asyncpg://navalha_app:navalha_app@localhost:5432/navalha
       DATABASE_URL_MIGRATIONS: postgresql+asyncpg://navalha:navalha@localhost:5432/navalha
       JWT_SECRET: ci-only-secret-with-more-than-32-bytes-of-length
@@ -54,8 +54,8 @@ jobs:
 
       - name: Lint and format
         run: |
-          ruff check app tests
-          ruff format --check app tests
+          ruff check app tests tools
+          ruff format --check app tests tools
 
       - name: Module boundaries
         run: lint-imports
@@ -69,10 +69,11 @@ jobs:
           for _ in $(seq 1 30); do psql "$ADMIN_URL" -c 'SELECT 1' >/dev/null 2>&1 && break; sleep 1; done
           psql "$ADMIN_URL" -v ON_ERROR_STOP=1 -f ../infra/postgres/init/01-app-role.sql
 
-      - name: Migrations
+      - name: Migrations (control plane + tenant chain on tenant_template)
         run: |
-          alembic upgrade head
-          alembic check
+          python -m app.management.migrate --apply --template
+          alembic -n control check
+          alembic -n tenant -x schema=tenant_template check
 
       - name: Tests
         run: python -m pytest -q

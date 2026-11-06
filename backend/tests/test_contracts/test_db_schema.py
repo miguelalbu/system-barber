@@ -1,10 +1,10 @@
-"""The ORM schema as Alembic sees it — tables, columns, keys, indexes and enums."""
+"""The ORM schema as Alembic sees it — control plane and shop schema, separately."""
 
 from __future__ import annotations
 
 from sqlalchemy import Enum
 
-from app.core.model_registry import Base
+from app.core.model_registry import ControlBase, TenantBase
 from tests.test_contracts._snapshot import assert_matches_snapshot
 
 
@@ -21,12 +21,16 @@ def _column(col) -> dict:
         ),
     }
     if isinstance(col.type, Enum):
-        data["enum"] = {"name": col.type.name, "values": list(col.type.enums)}
+        data["enum"] = {
+            "name": col.type.name,
+            "schema": col.type.schema,
+            "values": list(col.type.enums),
+        }
     return data
 
 
-def test_orm_schema_is_stable():
-    schema = {
+def _schema(metadata) -> dict:
+    return {
         name: {
             "columns": {col.name: _column(col) for col in table.columns},
             "indexes": sorted(
@@ -40,6 +44,15 @@ def test_orm_schema_is_stable():
                 if c.name
             ),
         }
-        for name, table in sorted(Base.metadata.tables.items())
+        for name, table in sorted(metadata.tables.items())
     }
-    assert_matches_snapshot("db_schema", schema)
+
+
+def test_orm_schema_is_stable():
+    assert_matches_snapshot(
+        "db_schema",
+        {
+            "control (public)": _schema(ControlBase.metadata),
+            "tenant (per shop)": _schema(TenantBase.metadata),
+        },
+    )

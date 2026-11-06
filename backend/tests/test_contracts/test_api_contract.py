@@ -5,6 +5,7 @@ from __future__ import annotations
 from fastapi.routing import APIRoute
 
 from app.main import app
+from app.modules.provisioning.router.tenants import core_openapi_schema
 from tests.test_contracts._snapshot import assert_matches_snapshot
 
 
@@ -12,10 +13,10 @@ def _dependency_names(dependant) -> list[str]:
     """
     Names of every dependency a route resolves, depth first.
 
-    `require(permission)` returns a closure, so its name alone says nothing — the
-    permission it guards is read from the closure and rendered as
-    `require(team:manage)`. That is what makes a dropped or swapped permission
-    guard fail this snapshot.
+    `require(permission)` and `core_caller(scope)` return closures, so their name
+    alone says nothing — what they guard is read from the closure and rendered as
+    `require(team:manage)` or `core(tenant:provision)`. That is what makes a
+    dropped or swapped guard fail this snapshot.
     """
     names: list[str] = []
     for dep in dependant.dependencies:
@@ -27,6 +28,8 @@ def _dependency_names(dependant) -> list[str]:
             value = cell.cell_contents
             if type(value).__name__ == "Permission":
                 label = f"require({value.value})"
+            elif type(value).__name__ == "CoreScope":
+                label = f"core({value.value})"
         names.append(label)
         names.extend(_dependency_names(dep))
     return names
@@ -51,6 +54,11 @@ def _api_routes(routes) -> list[APIRoute]:
 
 def test_openapi_schema_is_stable():
     assert_matches_snapshot("openapi", app.openapi())
+
+
+def test_core_openapi_schema_is_stable():
+    """The control plane's private contract with the platform Core."""
+    assert_matches_snapshot("core_openapi", core_openapi_schema())
 
 
 def test_route_table_with_guards_is_stable():

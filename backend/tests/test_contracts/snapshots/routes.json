@@ -52,13 +52,93 @@
   },
   {
     "dependencies": [
-      "get_platform_session"
+      "core(tenant:read)"
+    ],
+    "methods": [
+      "GET"
+    ],
+    "path": "/core/openapi.json",
+    "status_code": null
+  },
+  {
+    "dependencies": [
+      "core(tenant:read)"
+    ],
+    "methods": [
+      "GET"
+    ],
+    "path": "/core/tenants",
+    "status_code": null
+  },
+  {
+    "dependencies": [
+      "core(tenant:provision)"
     ],
     "methods": [
       "POST"
     ],
-    "path": "/auth/register-shop",
-    "status_code": 201
+    "path": "/core/tenants",
+    "status_code": 202
+  },
+  {
+    "dependencies": [
+      "core(tenant:destroy)"
+    ],
+    "methods": [
+      "DELETE"
+    ],
+    "path": "/core/tenants/{tenant_id}",
+    "status_code": 204
+  },
+  {
+    "dependencies": [
+      "core(tenant:read)"
+    ],
+    "methods": [
+      "GET"
+    ],
+    "path": "/core/tenants/{tenant_id}",
+    "status_code": null
+  },
+  {
+    "dependencies": [
+      "core(tenant:provision)"
+    ],
+    "methods": [
+      "POST"
+    ],
+    "path": "/core/tenants/{tenant_id}/invite",
+    "status_code": null
+  },
+  {
+    "dependencies": [
+      "core(tenant:provision)"
+    ],
+    "methods": [
+      "POST"
+    ],
+    "path": "/core/tenants/{tenant_id}/resume",
+    "status_code": null
+  },
+  {
+    "dependencies": [
+      "core(tenant:provision)"
+    ],
+    "methods": [
+      "POST"
+    ],
+    "path": "/core/tenants/{tenant_id}/retry",
+    "status_code": 202
+  },
+  {
+    "dependencies": [
+      "core(tenant:provision)"
+    ],
+    "methods": [
+      "POST"
+    ],
+    "path": "/core/tenants/{tenant_id}/suspend",
+    "status_code": null
   },
   {
     "dependencies": [],
@@ -119,13 +199,26 @@
   {
     "dependencies": [
       "resolve_tenant",
-      "get_platform_session"
+      "get_session",
+      "resolve_tenant"
     ],
     "methods": [
       "POST"
     ],
     "path": "/team/invites/accept",
     "status_code": 201
+  },
+  {
+    "dependencies": [
+      "resolve_tenant",
+      "get_session",
+      "resolve_tenant"
+    ],
+    "methods": [
+      "POST"
+    ],
+    "path": "/team/invites/lookup",
+    "status_code": null
   },
   {
     "dependencies": [
@@ -163,7 +256,7 @@
       "resolve_tenant",
       "get_session",
       "resolve_tenant",
-      "get_platform_session"
+      "get_control_session"
     ],
     "methods": [
       "PATCH"

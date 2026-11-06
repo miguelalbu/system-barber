@@ -3,7 +3,7 @@
 Instruções de trabalho para qualquer sessão de agente de IA (Claude Code, Copilot etc.) neste
 projeto.
 
-`.github/specs/` é o plano de execução e a memória arquitetural escrita do projeto.
+`docs/specs/` é o plano de execução e a memória arquitetural escrita do projeto.
 `.github/index.toml` descreve o resto do sistema de instruções (`rules.md`, `soul.md`, `memory/`).
 `.github/rules.md` é a fonte das regras técnicas; este arquivo resume o essencial e aponta para lá.
 
@@ -16,13 +16,17 @@ pela API HTTP, com JWT. A API é o contrato entre os dois.
 
 Resumo:
 
-* Python 3.12 + FastAPI, async. PostgreSQL 16 com **Row-Level Security** via SQLAlchemy 2 async;
-  migrations Alembic. Redis provisionado, ainda não usado.
-* **Multi-tenant em banco compartilhado** (DEC-001): toda tabela de barbearia tem `tenant_id` e
-  policy RLS; a API conecta com um role sem privilégio; o tenant vem do domínio (DEC-002).
+* Python 3.12 + FastAPI, async. PostgreSQL 16 via SQLAlchemy 2 async; migrations Alembic em dois
+  conjuntos (`control` e `tenant`). Redis provisionado, ainda não usado.
+* **Schema por barbearia** (DEC-011, desenho do ClaraCRM v2 em `../docs/multi-tenant-architecture-v2.md`):
+  `public` é só o control plane; cada barbearia tem `tenant_<slug>`, e toda query é qualificada pelo
+  `schema_translate_map` — nunca `SET search_path` em request. O tenant vem do subdomínio
+  personalizado ou do domínio próprio (DEC-002). A API conecta sem DDL (DEC-012).
+* Barbearias nascem só pelo **control plane** `/core/*` (`X-Core-Key`, módulo `provisioning`),
+  chamado pelo Core da plataforma (DEC-014).
 * **Monólito modular por feature** (DEC-006): `app/core/` (infraestrutura) e `app/modules/<modulo>/`,
-  todos com a forma `router/ service/ repository/ model/` + `schemas.py` + `public.py`. Hoje há um
-  módulo, `identity`; os próximos seguem `.github/skills/new-module.md`.
+  todos com a forma `router/ service/ repository/ model/` + `schemas.py` + `public.py`. Hoje:
+  `identity` e `provisioning`; os próximos seguem `.github/skills/new-module.md`.
 * Um módulo importa outro **só pelo `public.py`**; dentro do módulo, `router → service → repository
   → model`. Verificado por `lint-imports` e por `tests/test_contracts/`.
 * RBAC por permissão com escopo (`all/unit/own`), mapa único em
@@ -39,8 +43,10 @@ Comandos (na **raiz do repositório**; ver `make help`):
 | testes | `make test-backend` |
 | lint (ruff + fronteiras) | `make lint-backend` |
 | portão completo | `make check-backend` (pytest + ruff + lint-imports + alembic check) |
-| migrations | `make migrate` · nova: `cd backend && .venv/bin/alembic revision --autogenerate -m "..."` |
+| migrations | `make migrate` (controle + cada barbearia) · nova: ver `rules.md`, "Database" |
+| chave do Core | `make core-key NAME=... SCOPES=tenant:read,tenant:provision` |
 | conta de suporte | `make seed-admin` |
+| referência da API (`docs/api/`) | `make docs-api` (gerada do OpenAPI; nunca à mão) |
 
 A API sobe em `http://localhost:8000` (docs em `/docs`). Em dev, use o header `X-Tenant-Slug`.
 Variáveis de ambiente: `docs/ENVIRONMENT_VARIABLES.md`. Permissões: `docs/PERMISSIONS_MAP.md`.
@@ -65,7 +71,7 @@ daqui desatualizado. Não edite a cada alteração pequena, e só altere com ped
 explícita — se perceber defasagem, avise e proponha o diff.
 
 Este arquivo contém **instruções e convenções**, não um diário de alterações. Decisões de
-funcionalidade e regras de negócio vão para `.github/specs/` e `.github/memory/`.
+funcionalidade e regras de negócio vão para `docs/specs/` e `.github/memory/`.
 
 ### Sistema de contexto `.github/`
 
@@ -83,15 +89,15 @@ funcionalidade e regras de negócio vão para `.github/specs/` e `.github/memory
 1. **Ler o código atual** — ele é a fonte da verdade. Antes de editar, leia
    `.github/memory/issues.md`.
 2. **Consultar a spec** — mudança de domínio, regra de negócio, rota ou tabela tem spec em
-   `.github/specs/`. Funcionalidade nova **começa** pela spec (`specs/_template.md`); se tocar o
-   frontend, a spec tem espelho em `frontend/.github/specs/`.
+   `docs/specs/`. Funcionalidade nova **começa** pela spec (`docs/specs/_template.md`); se tocar o
+   frontend, a spec tem espelho em `frontend/docs/specs/`.
 3. **Planejar** — identificar módulo, camadas (`router/ service/ repository/ model/`), migrations,
    permissões e o impacto no frontend.
 4. **Implementar** — respeitando a arquitetura modular e as regras de multi-tenancy de `rules.md`.
    Reaproveite o que existe antes de criar; não adicione dependência sem aprovação.
 5. **Validar** — `make check-backend`. Uma etapa só termina com tudo verde. Snapshot de contrato
    falhando: ache a causa; regenerar só se a mudança for intencional e estiver na spec.
-6. **Atualizar a documentação** — checkboxes e status da spec, `memory/progress.md`,
+6. **Atualizar a documentação** — `make docs-api` se rota ou schema mudou; checkboxes e status da spec, `memory/progress.md`,
    `memory/issues.md` (o que foi achado no caminho), `memory/decisions.md` (decisão nova),
    `README.md` (endpoints).
 7. **Sinalizar defasagem deste CLAUDE.md** — avise e proponha o diff.
@@ -102,8 +108,9 @@ funcionalidade e regras de negócio vão para `.github/specs/` e `.github/memory
 
 Verifique:
 
-* Toda tabela nova de barbearia tem `tenant_id` e policy RLS na migration, e um teste de
-  isolamento prova que outra barbearia não a enxerga.
+* Toda tabela nova de barbearia está no conjunto `alembic/tenant` (herda `TenantBase`, sem
+  `tenant_id`), e um teste com **duas barbearias** prova que uma não enxerga nem altera a outra.
+* Nenhum estado de processo (cache, fila) guarda dado de barbearia sem particionar pelo tenant.
 * Toda rota nova tem guarda de permissão (ou é explicitamente pública na spec) e aplica o escopo.
 * Regra de negócio está em `service/`, SQL em `repository/`, o router está fino.
 * Nenhum módulo importou outro por fora do `public.py`; `core` não importou módulo.
@@ -126,7 +133,7 @@ Verifique:
 Hierarquia para resolver conflitos:
 
 1. **Código atual**
-2. **Specs em `.github/specs/`**
+2. **Specs em `docs/specs/`**
 3. **Decisões explícitas tomadas na conversa**
 4. **Este CLAUDE.md e o resto do sistema de instruções** (`rules.md`, `soul.md`, `memory/`)
 5. **Inferências**

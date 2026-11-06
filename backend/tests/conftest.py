@@ -1,10 +1,102 @@
+"""
+Shared fixtures.
+
+The suite runs against the development Postgres (port 5433) with the control
+plane migrated (`make migrate`). Every shop a test creates goes through the
+real path — control plane → provisioning job (schema, migrations, grants,
+bootstrap) → owner's first-access invite — and is destroyed at the end of the
+session: schema, role and catalog rows. Nothing is left behind.
+"""
+
+from __future__ import annotations
+
+import asyncio
+import secrets
 import uuid
 
 import pytest
 from httpx import ASGITransport, AsyncClient
+from sqlalchemy import text
+from sqlalchemy.ext.asyncio import create_async_engine
+from sqlalchemy.pool import NullPool
 
+from app.core.config import settings
 from app.core.database import engine
+from app.core.security import hash_token
 from app.main import app
+from app.modules.provisioning.dependencies import READ_LIMIT, WRITE_LIMIT
+
+ALL_SCOPES = ["tenant:read", "tenant:provision", "tenant:destroy"]
+
+# Slugs created during this run, destroyed at the end.
+_created_slugs: set[str] = set()
+
+
+def _migrator():
+    return create_async_engine(settings.database_url_migrations, poolclass=NullPool)
+
+
+async def _insert_core_key(raw: str, scopes: list[str], name: str) -> uuid.UUID:
+    key_id = uuid.uuid4()
+    eng = _migrator()
+    async with eng.begin() as conn:
+        await conn.execute(
+            text(
+                "INSERT INTO public.core_keys (id, name, key_hash, scopes, ip_allowlist) "
+                "VALUES (:id, :name, :hash, :scopes, '{}')"
+            ),
+            {"id": key_id, "name": name, "hash": hash_token(raw), "scopes": scopes},
+        )
+    await eng.dispose()
+    return key_id
+
+
+async def _destroy_everything(slugs: set[str], key_ids: list[uuid.UUID]) -> None:
+    eng = _migrator()
+    async with eng.begin() as conn:
+        for slug in slugs:
+            schema = await conn.scalar(
+                text("SELECT schema_name FROM public.tenants WHERE slug = :s"), {"s": slug}
+            )
+            if schema:
+                await conn.execute(text(f'DROP SCHEMA IF EXISTS "{schema}" CASCADE'))
+                if await conn.scalar(
+                    text("SELECT 1 FROM pg_roles WHERE rolname = :r"), {"r": schema}
+                ):
+                    await conn.execute(text(f'DROP OWNED BY "{schema}"'))
+                    await conn.execute(text(f'DROP ROLE "{schema}"'))
+            await conn.execute(text("DELETE FROM public.tenants WHERE slug = :s"), {"s": slug})
+        for key_id in key_ids:
+            await conn.execute(
+                text("DELETE FROM public.core_audit_log WHERE core_key_id = :k"), {"k": key_id}
+            )
+            await conn.execute(text("DELETE FROM public.core_keys WHERE id = :k"), {"k": key_id})
+    await eng.dispose()
+
+
+_session_key_ids: list[uuid.UUID] = []
+
+
+@pytest.fixture(scope="session")
+def core_key() -> str:
+    """A Core key with every scope, removed (with its audit trail) at the end."""
+    raw = "nvc_test_" + secrets.token_urlsafe(24)
+    _session_key_ids.append(asyncio.run(_insert_core_key(raw, ALL_SCOPES, "pytest")))
+    yield raw
+    asyncio.run(_destroy_everything(_created_slugs, _session_key_ids))
+
+
+@pytest.fixture
+def make_core_key():
+    """Factory for keys with specific scopes; cleaned up with the session key."""
+
+    async def factory(scopes: list[str], name: str = "pytest-scoped") -> tuple[str, uuid.UUID]:
+        raw = "nvc_test_" + secrets.token_urlsafe(24)
+        key_id = await _insert_core_key(raw, scopes, name)
+        _session_key_ids.append(key_id)
+        return raw, key_id
+
+    return factory
 
 
 @pytest.fixture(autouse=True)
@@ -18,6 +110,12 @@ async def _dispose_pool():
     await engine.dispose()
 
 
+@pytest.fixture(autouse=True)
+def _reset_rate_limits():
+    READ_LIMIT.reset()
+    WRITE_LIMIT.reset()
+
+
 @pytest.fixture
 async def client():
     transport = ASGITransport(app=app)
@@ -27,23 +125,62 @@ async def client():
 
 @pytest.fixture
 def slug() -> str:
-    """A unique slug per test — tests run against the development database."""
+    """A unique, valid slug per test."""
     return f"t{uuid.uuid4().hex[:10]}"
 
 
-async def create_shop(client: AsyncClient, slug: str, email: str, password: str) -> dict:
+def core(key: str) -> dict[str, str]:
+    return {"X-Core-Key": key}
+
+
+def track(slug: str) -> None:
+    """Register a slug created outside `provision`, so the session cleans it up."""
+    _created_slugs.add(slug)
+
+
+async def provision(
+    client: AsyncClient,
+    key: str,
+    slug: str,
+    owner_email: str,
+    owner_name: str = "Test Owner",
+    **extra,
+) -> dict:
+    """Provision a shop through the control plane; returns the detail (invite link once)."""
+    _created_slugs.add(slug)
     resp = await client.post(
-        "/auth/register-shop",
+        "/core/tenants",
+        headers=core(key),
         json={
-            "shop_name": f"Barbearia {slug}",
             "slug": slug,
-            "owner_name": "Test Owner",
-            "email": email,
-            "password": password,
+            "name": f"Barbearia {slug}",
+            "owner": {"name": owner_name, "email": owner_email},
+            **extra,
         },
     )
-    assert resp.status_code == 201, resp.text
-    return resp.json()
+    assert resp.status_code == 202, resp.text
+    detail = await client.get(f"/core/tenants/{resp.json()['tenant_id']}", headers=core(key))
+    assert detail.status_code == 200, detail.text
+    body = detail.json()
+    assert body["status"] == "active", body
+    return body
+
+
+async def accept(client: AsyncClient, slug: str, invite_link: str, password: str):
+    token = invite_link.rsplit("/", 1)[-1]
+    return await client.post(
+        "/team/invites/accept",
+        headers={"X-Tenant-Slug": slug},
+        json={"token": token, "password": password},
+    )
+
+
+async def create_shop(client: AsyncClient, key: str, slug: str, email: str, password: str) -> dict:
+    """A ready shop: provisioned, with the owner's first access done."""
+    detail = await provision(client, key, slug, email)
+    accepted = await accept(client, slug, detail["invite_link"], password)
+    assert accepted.status_code == 201, accepted.text
+    return {"tenant": detail, "user": accepted.json()}
 
 
 async def login(client: AsyncClient, slug: str, email: str, password: str):

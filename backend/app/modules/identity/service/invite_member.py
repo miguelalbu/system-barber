@@ -2,14 +2,12 @@ from __future__ import annotations
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.config import settings
 from app.core.exceptions import BadRequest, Conflict, Forbidden
-from app.core.security import generate_opaque_token, invite_expiry
 from app.modules.identity.dependencies import AuthContext
-from app.modules.identity.model import Invite
 from app.modules.identity.repository import units as unit_repo
 from app.modules.identity.repository import users as user_repo
 from app.modules.identity.schemas import InviteCreatedOut, InviteIn
+from app.modules.identity.service.create_invite import create_invite, invite_link
 
 
 async def invite_member(
@@ -31,22 +29,16 @@ async def invite_member(
         if valid != set(data.unit_ids):
             raise BadRequest("Unidade inexistente")
 
-    token, token_hash = generate_opaque_token()
-    record = Invite(
-        tenant_id=ctx.tenant.id,
+    record, token = await create_invite(
+        session,
         email=email,
         name=data.name,
         role=data.role,
-        token_hash=token_hash,
-        expires_at=invite_expiry(),
-        created_by_id=ctx.user.id,
         unit_ids=list(data.unit_ids),
         create_barber=data.create_barber,
+        created_by_id=ctx.user.id,
     )
-    session.add(record)
-    await session.flush()
 
     # Until transactional email exists the link goes back in the response, for
     # the owner to forward over WhatsApp (ISS-004).
-    base = f"https://{ctx.tenant.slug}.{settings.base_domain}"
-    return InviteCreatedOut(invite=record, link=f"{base}/convite/{token}")
+    return InviteCreatedOut(invite=record, link=invite_link(ctx.tenant, token))

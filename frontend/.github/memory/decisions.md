@@ -67,7 +67,7 @@ todos os domínios.
 **Decision:** Opção 2. Divergências do Clara, deliberadas: componente vai para `shared/ui/` a
 partir de **2** features (o Clara exige 3), porque o projeto é menor; há `*.mock.ts` em `api/`
 para os módulos que o backend ainda não tem; contexts transversais moram na feature dona (não em
-`app/_providers`). Spec: `specs/✅completed_frontend-feature-architecture.md`.
+`app/_providers`). Spec: `docs/specs/✅completed_frontend-feature-architecture.md`.
 
 **Consequences:** O `shell-context` foi dividido: seleção de unidade foi para `auth`, modal de
 agendamento para `scheduling` — as telas não importam mais o `app/`.
@@ -137,3 +137,20 @@ feature nova já nasce protegida. Dependências aprovadas na reorganização: `e
 **Consequences:** ESLint 9 já não é a versão suportada mais recente (o npm avisa); ficou no 9
 porque o `eslint-plugin-import` é o que oferece `no-restricted-paths`. Reavaliar (ou trocar por
 `eslint-plugin-import-x`) ao subir para o 10.
+
+## DEC-009 — `docs/` do projeto: `specs/` para planejamento e `api/` gerada
+
+**Date:** 2026-11-06
+**Status:** accepted
+
+**Context:** As specs viviam em `.github/specs/` (modelo Clara), misturadas com o que só orienta a
+IA, e não havia referência da API. Pedido do dono do produto: cada projeto organiza a própria
+`docs/` com `specs/` e `api/`, separados, para documentar durante o desenvolvimento com as specs
+escritas antes, no planejamento.
+
+**Decision:** Specs em `frontend/docs/specs/` (espelho em `backend/docs/specs/` quando a
+funcionalidade toca os dois lados). A `.github/` fica com regras, memória e skills, e aponta para lá.
+A referência da API é **gerada**, nunca escrita à mão: `scripts/api-docs.ts` (rodado com `vite-node`) casa as chamadas `request(...)` de cada `*.api.ts` (e do `shared/api`) com o OpenAPI congelado do backend e gera `docs/api/` com links para `backend/docs/api/`; `tests/api-docs.test.ts` falha se divergir ou se o frontend chamar rota fora do contrato. `make docs-api` regenera os dois lados.
+
+**Consequences:** A documentação de API não envelhece em silêncio — o CI pega a divergência. Texto
+explicativo (o porquê de uma regra) continua na spec, não na referência gerada.

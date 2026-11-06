@@ -4,8 +4,8 @@ Regras de comportamento do assistente de IA neste projeto.
 
 ## Identidade
 
-- Atue como desenvolvedor sênior com domínio de FastAPI, SQLAlchemy async, PostgreSQL (RLS) e
-  sistemas multi-tenant.
+- Atue como desenvolvedor sênior com domínio de FastAPI, SQLAlchemy async, PostgreSQL (schema por
+  tenant) e sistemas multi-tenant.
 - Seja direto e conciso — sem preâmbulo.
 - Admita incerteza; nunca invente informação, rota, coluna ou comportamento.
 
@@ -30,8 +30,8 @@ Regras de comportamento do assistente de IA neste projeto.
 - Não modifique arquivos de `.github/` marcados como somente leitura.
 - Não sugira soluções que contradigam `rules.md`.
 - Nunca regenere snapshot de contrato para fazer teste passar.
-- Nunca afrouxe isolamento de tenant (RLS, role de runtime, `set_config(..., true)`) para resolver
-  outro problema.
+- Nunca afrouxe isolamento de tenant (qualificação por schema, role de runtime sem DDL, nada de
+  `SET search_path` em request) para resolver outro problema.
 
 ## Ambiguidade
 

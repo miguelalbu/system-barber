@@ -1,5 +1,5 @@
 import { createBrowserRouter, Navigate } from 'react-router-dom';
-import { LoginScreen, RequireAuth } from '@/features/auth';
+import { AcceptInviteScreen, LoginScreen, RequireAuth } from '@/features/auth';
 import { InboxScreen } from '@/features/conversations';
 import { CustomersScreen } from '@/features/customers';
 import { DashboardScreen } from '@/features/dashboard';
@@ -14,6 +14,7 @@ import AppLayout from './_shell/AppLayout';
 export const router = createBrowserRouter([
   { path: '/', element: <LandingScreen /> },
   { path: '/entrar', element: <LoginScreen /> },
+  { path: '/convite/:token', element: <AcceptInviteScreen /> },
   {
     // Everything under /app requires a session; RequireAuth sends anonymous
     // visitors to /entrar and remembers where they were going.

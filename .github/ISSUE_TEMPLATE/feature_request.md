@@ -16,5 +16,5 @@ labels: feature
 
 ## Antes de implementar
 
-Esta issue vira uma spec (`backend/.github/specs/` e, se tiver tela, o espelho em
-`frontend/.github/specs/`) a partir do `_template.md`. A spec é o contrato; a issue é só o pedido.
+Esta issue vira uma spec (`backend/docs/specs/` e, se tiver tela, o espelho em
+`frontend/docs/specs/`) a partir do `_template.md`. A spec é o contrato; a issue é só o pedido.

@@ -9,13 +9,13 @@ ClaraAI.
 ```text
 issue (o pedido)
    ↓
-spec  (<projeto>/.github/specs/⚪draft_ → ⏳active_)      ← o contrato: regras, payloads, tabelas, critérios
+spec  (<projeto>/docs/specs/⚪draft_ → ⏳active_)      ← o contrato: regras, payloads, tabelas, critérios
    ↓
 implementação  (seguindo rules.md e as skills)
    ↓
 make check  (+ navegador, se tem tela)
    ↓
-spec ✅completed_ + memory/progress.md + issues.md + decisions.md
+spec ✅completed_ + make docs-api + memory/progress.md + issues.md + decisions.md
    ↓
 PR  (template com checklist) → CI verde → merge
 ```

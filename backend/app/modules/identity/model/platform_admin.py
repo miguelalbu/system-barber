@@ -3,11 +3,11 @@ import uuid
 from sqlalchemy import Boolean, String
 from sqlalchemy.orm import Mapped, mapped_column
 
-from app.core.model_base import Base, TimestampMixin, uuid_pk
+from app.core.model_base import ControlBase, TimestampMixin, uuid_pk
 
 
-class PlatformAdmin(Base, TimestampMixin):
-    """Our own staff, for cross-tenant support. Outside the tenant RBAC, no RLS (DEC-003)."""
+class PlatformAdmin(ControlBase, TimestampMixin):
+    """Our own staff, for cross-tenant support. Control plane, outside the shop RBAC (DEC-003)."""
 
     __tablename__ = "platform_admins"
 

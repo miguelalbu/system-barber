@@ -1,4 +1,4 @@
-"""`platform_admins` is control plane: no RLS (DEC-003)."""
+"""`platform_admins` is control plane, in `public` (DEC-003)."""
 
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession

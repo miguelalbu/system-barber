@@ -13,7 +13,7 @@ Padrões inegociáveis deste projeto. Prevalecem sobre o conhecimento geral da I
 ## Architecture
 
 Vertical slice por feature (DEC-003), no modelo do frontend da ClaraAI, adaptado para SPA com Vite.
-Spec: `.github/specs/✅completed_frontend-feature-architecture.md`.
+Spec: `docs/specs/✅completed_frontend-feature-architecture.md`.
 
 - **`features/<feature>/`** — cada domínio tem uma pasta com tudo o que precisa:
   - `index.ts` — a API pública da feature; o **único** ponto que outro código pode importar.
@@ -132,7 +132,12 @@ frontend/
 
 ## Documentation
 
-- `README.md` com setup, rotas e estado de cada tela atualizados.
+- `docs/` do projeto (índice em `docs/README.md`):
+  - `docs/specs/` — planejamento **antes** do código; a spec é o contrato da funcionalidade.
+  - `docs/api/` é **gerada** das chamadas em `src/features/*/api` + contrato do backend (`make docs-api`) e verificada por `tests/api-docs.test.ts`, que também falha se o frontend chamar rota fora do contrato; nunca editar à mão.
+  - referências avulsas (`ENVIRONMENT_VARIABLES.md`).
+- Código autoexplicativo reduz a necessidade de comentário; documente o "porquê".
+- `README.md` com setup e o estado atual atualizados.
 - Variável de ambiente nova entra em `.env.example` e em `docs/ENVIRONMENT_VARIABLES.md`.
 
 ## Versioning

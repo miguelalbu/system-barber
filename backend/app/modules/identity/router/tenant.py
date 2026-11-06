@@ -8,8 +8,8 @@ from fastapi import APIRouter, Depends
 
 from app.modules.identity.dependencies import (
     AuthContext,
+    ControlSessionDep,
     CurrentUser,
-    PlatformSessionDep,
     SessionDep,
     require,
 )
@@ -30,7 +30,7 @@ async def current(ctx: CurrentUser) -> Tenant:
 
 
 @router.patch("", response_model=TenantOut, summary="Update shop details")
-async def update(data: TenantUpdate, ctx: Configure, session: PlatformSessionDep) -> Tenant:
+async def update(data: TenantUpdate, ctx: Configure, session: ControlSessionDep) -> Tenant:
     return await update_tenant(session, ctx.tenant.id, data)
 
 

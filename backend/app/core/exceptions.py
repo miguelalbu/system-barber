@@ -45,6 +45,16 @@ class Conflict(AppError):
     status_code = status.HTTP_409_CONFLICT
 
 
+class TooManyRequests(AppError):
+    status_code = status.HTTP_429_TOO_MANY_REQUESTS
+
+
+class ServiceUnavailable(AppError):
+    """A state that resolves by itself (provisioning, migration pending): the caller may retry."""
+
+    status_code = status.HTTP_503_SERVICE_UNAVAILABLE
+
+
 async def _handle_app_error(_: Request, exc: Exception) -> JSONResponse:
     assert isinstance(exc, AppError)
     return JSONResponse(

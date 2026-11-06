@@ -64,7 +64,7 @@ ignore_imports = ["app.core.model_registry -> app.modules.*.model"]
 [[tool.importlinter.contracts]]
 name = "inside a module, layers point down: router -> service -> repository -> model"
 type = "layers"
-containers = ["app.modules.identity"]
+containers = ["app.modules.identity", "app.modules.provisioning"]
 layers = ["router", "service", "repository", "model"]
 
 [[tool.importlinter.contracts]]

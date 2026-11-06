@@ -6,6 +6,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.exceptions import Unauthorized
 from app.core.security import hash_token
+from app.modules.identity.model import Tenant
 from app.modules.identity.repository import barbers as barber_repo
 from app.modules.identity.repository import refresh_tokens as refresh_repo
 from app.modules.identity.repository import users as user_repo
@@ -13,7 +14,7 @@ from app.modules.identity.schemas import TokensOut
 from app.modules.identity.service.issue_tokens import issue_tokens
 
 
-async def refresh_session(session: AsyncSession, refresh_token: str) -> TokensOut:
+async def refresh_session(session: AsyncSession, tenant: Tenant, refresh_token: str) -> TokensOut:
     now = datetime.now(UTC)
     record = await refresh_repo.find_by_hash(session, hash_token(refresh_token))
 
@@ -28,4 +29,4 @@ async def refresh_session(session: AsyncSession, refresh_token: str) -> TokensOu
     # leak signal — reuse detection lands together with auditing (ISS-003).
     record.revoked_at = now
     barber_id = await barber_repo.id_for_user(session, user.id)
-    return await issue_tokens(session, user, barber_id)
+    return await issue_tokens(session, tenant, user, barber_id)

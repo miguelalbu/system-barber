@@ -11,7 +11,8 @@
     "lint": "eslint .",
     "test": "vitest run",
     "test:watch": "vitest",
-    "check": "npm run lint && npm run typecheck && npm run test"
+    "check": "npm run lint && npm run typecheck && npm run test",
+    "docs:api": "vite-node scripts/api-docs.cli.ts"
   },
   "dependencies": {
     "react": "^18.3.1",

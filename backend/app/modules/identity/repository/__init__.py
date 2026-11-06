@@ -1,1 +1,1 @@
-"""All SQL of the identity module, one file per aggregate. RLS already scopes tenant tables."""
+"""All SQL of the identity module, one file per aggregate. Shop tables come schema-scoped."""

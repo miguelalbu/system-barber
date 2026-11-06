@@ -20,7 +20,7 @@ read = [
   "/memory/progress.md",
   "/memory/issues.md",
   "/memory/decisions.md",
-  "/specs/",
+  "../docs/specs/",
 ]
 write = []
 
@@ -31,21 +31,21 @@ read = [
   "/memory/progress.md",     # avoid recreating what already exists
   "/memory/issues.md",       # avoid repeating past mistakes
   "/memory/decisions.md",    # previous decisions
-  "/specs/",                 # existing patterns
+  "../docs/specs/",                 # existing patterns
   "/skills/",                # how a new feature is built
 ]
 write = [
-  "/specs/[feature].md",     # create the feature spec from specs/_template.md
+  "../docs/specs/[feature].md",     # create the feature spec from specs/_template.md
 ]
 
 [on_spec_update]
 trigger = "update spec, scope changed, spec diverged, adjust contract, atualizar spec, mudou o escopo, ajustar contrato, a spec está desatualizada"
 read = [
-  "/specs/",
+  "../docs/specs/",
   "/memory/progress.md",
 ]
 write = [
-  "/specs/[feature].md",
+  "../docs/specs/[feature].md",
 ]
 
 [on_implementation]
@@ -53,19 +53,19 @@ trigger = "implement, code, build, develop, finish, implementar, codar, desenvol
 read = [
   "/memory/progress.md",
   "/memory/issues.md",       # fragile areas requiring care
-  "/specs/",                 # the feature contract
+  "../docs/specs/",                 # the feature contract
   "/skills/",                # approved patterns
 ]
 write = [
   "/memory/progress.md",     # update state after delivery
-  "/specs/[feature].md",     # mark checklists [ ] → [x], rename on status change
+  "../docs/specs/[feature].md",     # mark checklists [ ] → [x], rename on status change
 ]
 
 [on_review]
 trigger = "review, audit, check, inspect, code review, revisar, revisão, auditar, verificar, analisar código"
 read = [
   "/memory/issues.md",
-  "/specs/",
+  "../docs/specs/",
   "/skills/",
 ]
 write = [
@@ -77,7 +77,7 @@ trigger = "bug, error, exception, crash, not working, broken, fix, hotfix, worka
 read = [
   "/memory/issues.md",       # check if the bug is already known
   "/memory/progress.md",     # identify the affected area
-  "/specs/",                 # verify the expected contract
+  "../docs/specs/",                 # verify the expected contract
   "/skills/",
 ]
 write = [
@@ -103,11 +103,11 @@ trigger = "architecture, project structure, folder structure, state management, 
 read = [
   "/memory/decisions.md",
   "/memory/progress.md",
-  "/specs/",
+  "../docs/specs/",
 ]
 write = [
   "/memory/decisions.md",    # record the decision (append only)
-  "/specs/[feature].md",     # update the contract if it changed
+  "../docs/specs/[feature].md",     # update the contract if it changed
 ]
 
 [on_dependency]
@@ -146,7 +146,7 @@ write = [
 trigger = "test, coverage, vitest, write tests, regression, teste, testes, cobertura, escrever testes, regressão"
 read = [
   "/memory/progress.md",
-  "/specs/",
+  "../docs/specs/",
   "/skills/",
 ]
 write = [
@@ -158,7 +158,7 @@ trigger = "design system, component, token, color, typography, theme, style, ui,
 read = [
   "/project.toml",           # design tokens
   "/skills/",
-  "/specs/",
+  "../docs/specs/",
 ]
 write = []
 
@@ -187,7 +187,7 @@ trigger = "write docs, update readme, changelog, JSDoc, documentar, atualizar re
 read = [
   "/memory/progress.md",
   "/memory/decisions.md",
-  "/specs/",
+  "../docs/specs/",
 ]
 write = [
   "/memory/progress.md",

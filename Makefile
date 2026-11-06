@@ -64,8 +64,13 @@ psql: ## psql no banco como dono do schema (ignora RLS!)
 	$(BE_DC) exec db psql -U navalha -d navalha
 
 .PHONY: migrate
-migrate: ## Aplica as migrations Alembic no container
-	$(BE_DC) exec core-api alembic upgrade head
+migrate: ## Migra o controle e depois cada barbearia (servico one-shot)
+	$(BE_DC) run --rm migrate
+
+.PHONY: core-key
+core-key: ## Cria uma chave do Core (NAME=... SCOPES=tenant:read,tenant:provision)
+	$(BE_DC) exec core-api python -m app.management.core_key create \
+		--name "$(or $(NAME),core-dev)" --scopes "$(or $(SCOPES),tenant:read,tenant:provision)"
 
 .PHONY: seed-admin
 seed-admin: ## Cria a conta de suporte da plataforma (SEED_ADMIN_*)
@@ -84,12 +89,19 @@ test-backend: ## pytest (comportamento + snapshots de contrato) contra o Postgre
 
 .PHONY: lint-backend
 lint-backend: ## ruff (lint + formato) e lint-imports (fronteiras entre modulos)
-	cd backend && $(VENV_BIN)/ruff check app tests && $(VENV_BIN)/ruff format --check app tests \
+	cd backend && $(VENV_BIN)/ruff check app tests tools && $(VENV_BIN)/ruff format --check app tests tools \
 		&& $(VENV_BIN)/lint-imports
 
 .PHONY: check-backend
-check-backend: lint-backend test-backend ## Portao do backend: lint + testes + alembic check
-	cd backend && $(VENV_BIN)/alembic check
+check-backend: lint-backend test-backend ## Portao do backend: lint + testes + os dois alembic check
+	cd backend && $(VENV_BIN)/python -m app.management.migrate --apply --template \
+		&& $(VENV_BIN)/alembic -n control check \
+		&& $(VENV_BIN)/alembic -n tenant -x schema=tenant_template check
+
+.PHONY: docs-api
+docs-api: ## Regenera backend/docs/api e frontend/docs/api a partir do OpenAPI
+	cd backend && $(VENV_BIN)/python -m tools.api_docs
+	cd frontend && npm run docs:api
 
 # ── Frontend ──────────────────────────────────────────────────────────────────
 .PHONY: setup-frontend

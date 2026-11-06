@@ -5,7 +5,7 @@ import uuid
 import pytest
 from sqlalchemy import delete, select
 
-from app.core.database import platform_session
+from app.core.database import control_session, migrator_engine
 from app.core.security import verify_password
 from app.modules.identity.model import PlatformAdmin
 from app.modules.identity.service.seed_platform_admin import (
@@ -25,12 +25,14 @@ def email() -> str:
 @pytest.fixture(autouse=True)
 async def _cleanup(email):
     yield
-    async with platform_session() as session:
-        await session.execute(delete(PlatformAdmin).where(PlatformAdmin.email == email))
+    # The runtime role cannot delete platform admins; the schema owner can.
+    async with migrator_engine().begin() as conn:
+        await conn.execute(delete(PlatformAdmin).where(PlatformAdmin.email == email))
+    await migrator_engine().dispose()
 
 
 async def _load(email: str) -> PlatformAdmin | None:
-    async with platform_session() as session:
+    async with control_session() as session:
         return (
             await session.execute(select(PlatformAdmin).where(PlatformAdmin.email == email))
         ).scalar_one_or_none()

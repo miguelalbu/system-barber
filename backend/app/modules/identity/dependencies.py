@@ -3,7 +3,8 @@ FastAPI dependencies: tenant resolution, database session and authorization.
 
 The chain is always the same, in this order:
 
-    Host → Tenant → session with RLS pinned → user from the JWT → permission
+    Host → Tenant (control plane) → servable? → session on the shop's schema
+         → user from the JWT (same shop) → permission
 
 Other modules reach these through `app.modules.identity.public`.
 """
@@ -19,8 +20,9 @@ from fastapi import Depends, Header, Request
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.config import settings
-from app.core.database import SessionFactory, set_tenant
-from app.core.exceptions import Forbidden, NotFound, Unauthorized
+from app.core.database import control_session, tenant_session
+from app.core.exceptions import Forbidden, NotFound, ServiceUnavailable, Unauthorized
+from app.core.schema_version import is_behind
 from app.core.security import InvalidToken, TokenType, decode_token
 from app.modules.identity.model import Role, Tenant, TenantStatus, User
 from app.modules.identity.permissions import Permission, Scope, scope_for
@@ -37,12 +39,32 @@ def _hostname(request: Request) -> str:
     return host.split(":")[0].lower().strip()
 
 
+def _not_found(host: str) -> NotFound:
+    return NotFound(f"Barbearia não encontrada para '{host}'")
+
+
+def assert_servable(tenant: Tenant, host: str) -> None:
+    """
+    Only an active shop whose schema is not behind this build is served
+    (DEC-013). Archived looks exactly like unknown.
+    """
+    if tenant.status is TenantStatus.ARCHIVED:
+        raise _not_found(host)
+    if tenant.status is TenantStatus.SUSPENDED:
+        raise Forbidden("Assinatura inativa")
+    if tenant.status is not TenantStatus.ACTIVE:
+        raise ServiceUnavailable("Barbearia em preparação — tente de novo em instantes")
+    if is_behind(tenant.schema_version):
+        raise ServiceUnavailable("Barbearia em manutenção — tente de novo em instantes")
+
+
 async def resolve_tenant(
     request: Request,
     x_tenant_slug: Annotated[str | None, Header()] = None,
 ) -> Tenant:
     """
-    Find the shop from the access domain:
+    Find the shop from the access domain — its personalized subdomain or its
+    own domain (DEC-002):
 
     * `central.navalha.app`            → slug `central`
     * `agenda.barbeariacentral.com.br` → the `custom_domain` column
@@ -50,7 +72,7 @@ async def resolve_tenant(
     In development it also accepts the `X-Tenant-Slug` header, so the API can be
     exercised with curl without editing /etc/hosts. In production the header is
     ignored — the tenant must **never** come from something the client picks
-    freely (DEC-002).
+    freely.
     """
     host = _hostname(request)
     slug: str | None = None
@@ -60,19 +82,16 @@ async def resolve_tenant(
     elif host.endswith(f".{settings.base_domain}"):
         slug = host[: -len(settings.base_domain) - 1]
 
-    async with SessionFactory() as session:
-        async with session.begin():
-            await set_tenant(session, None)  # control plane table, no RLS
-            tenant = (
-                await tenant_repo.find_by_slug(session, slug)
-                if slug
-                else await tenant_repo.find_by_custom_domain(session, host)
-            )
+    async with control_session() as session:
+        tenant = (
+            await tenant_repo.find_by_slug(session, slug)
+            if slug
+            else await tenant_repo.find_by_custom_domain(session, host)
+        )
 
     if tenant is None:
-        raise NotFound(f"Barbearia não encontrada para '{host}'")
-    if tenant.status in (TenantStatus.SUSPENDED, TenantStatus.CANCELED):
-        raise Forbidden("Assinatura inativa")
+        raise _not_found(host)
+    assert_servable(tenant, host)
 
     request.state.tenant = tenant
     return tenant
@@ -82,25 +101,24 @@ TenantDep = Annotated[Tenant, Depends(resolve_tenant)]
 
 
 async def get_session(tenant: TenantDep) -> AsyncIterator[AsyncSession]:
-    """Session with the tenant already pinned — from here on RLS handles isolation."""
-    async with SessionFactory() as session:
-        async with session.begin():
-            await set_tenant(session, tenant.id)
-            yield session
+    """
+    Session whose shop tables are qualified with this shop's schema — read from
+    `tenants.schema_name`, never derived from the request (doc Camada 2).
+    """
+    async with tenant_session(tenant.schema_name) as session:
+        yield session
 
 
 SessionDep = Annotated[AsyncSession, Depends(get_session)]
 
 
-async def get_platform_session() -> AsyncIterator[AsyncSession]:
-    """For control plane routes (shop signup, invite acceptance)."""
-    async with SessionFactory() as session:
-        async with session.begin():
-            await set_tenant(session, None)
-            yield session
+async def get_control_session() -> AsyncIterator[AsyncSession]:
+    """Control plane tables only (`public`). Shop tables are unreachable from here."""
+    async with control_session() as session:
+        yield session
 
 
-PlatformSessionDep = Annotated[AsyncSession, Depends(get_platform_session)]
+ControlSessionDep = Annotated[AsyncSession, Depends(get_control_session)]
 
 
 # --------------------------------------------------------------------------- #
@@ -186,7 +204,7 @@ def require(permission: Permission) -> Callable[[AuthContext], AuthContext]:
             q = q.where(Appointment.barber_id == ctx.barber_id)
         elif ctx.scope is Scope.UNIT and not ctx.all_units:
             q = q.where(Appointment.unit_id.in_(ctx.units))
-        # tenant_id needs no filter: RLS already took care of it
+        # no tenant filter: the session only sees this shop's schema
     """
 
     def dependency(ctx: CurrentUser) -> AuthContext:

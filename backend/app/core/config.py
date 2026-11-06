@@ -8,8 +8,8 @@ class Settings(BaseSettings):
 
     environment: str = "dev"
 
-    # Runtime connects with a role that is NOT superuser and does NOT have
-    # BYPASSRLS — otherwise the tenant isolation policies are silently ignored.
+    # Runtime connects with a role without DDL — only DML on the tables it uses
+    # (DEC-012). Its username is the role provisioning grants in each new schema.
     database_url: str = "postgresql+asyncpg://navalha_app:navalha_app@localhost:5433/navalha"
     # Migrations connect as the schema owner, which needs DDL privileges.
     database_url_migrations: str = "postgresql+asyncpg://navalha:navalha@localhost:5433/navalha"
@@ -24,10 +24,6 @@ class Settings(BaseSettings):
     # Each shop is served at <slug>.<base_domain>, or at its own domain
     # pointed here by CNAME (tenants.custom_domain).
     base_domain: str = "navalha.local"
-
-    # Self-service shop signup from the landing page. Turn off to provision
-    # every tenant by hand during assisted onboarding.
-    allow_self_signup: bool = True
 
     cors_origins: list[str] = ["http://localhost:5173"]
 

@@ -5,7 +5,7 @@ existente pela API real quando o módulo correspondente chegar no backend.
 
 ## Antes de começar
 
-- A spec existe e está `⏳active` em `.github/specs/`. Se a feature consome API, a spec do backend
+- A spec existe e está `⏳active` em `docs/specs/`. Se a feature consome API, a spec do backend
   existe (espelho) e a rota já está no `openapi.json` do backend.
 - Leia `memory/issues.md` e as decisões DEC-003 (forma da feature) e DEC-005 (TanStack Query).
 

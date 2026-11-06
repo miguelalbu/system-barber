@@ -9,18 +9,30 @@ Padrões inegociáveis deste projeto. Prevalecem sobre o conhecimento geral da I
 - Preferir solução nativa/pura antes de dependência nova.
 - Todo erro é tratado explicitamente — nada de falha silenciosa.
 
-## Multi-tenancy (DEC-001, DEC-002) — o que nunca pode quebrar
+## Multi-tenancy (DEC-011 a DEC-014) — o que nunca pode quebrar
 
-- Toda tabela com dado de barbearia herda `TenantMixin` (`tenant_id`) e ganha policy RLS **na
-  mesma migration que a cria** (`apply_rls(...)`, ver `alembic/versions/0001_identity_core.py`).
-  Tabela de control plane (sem RLS) só com decisão registrada.
-- A aplicação conecta como `navalha_app` (sem SUPERUSER, sem BYPASSRLS). Migrations conectam como
-  o dono do schema. Nunca usar `DATABASE_URL_MIGRATIONS` em runtime.
-- O tenant é fixado com `set_config('app.tenant_id', :tid, true)` — o `true` (local à transação) é
-  obrigatório. Toda sessão nasce de `app/core/database.py` ou das dependências do `identity`.
-- O tenant vem do domínio (`Host`). `X-Tenant-Slug` só vale com `ENVIRONMENT=dev`.
-- Código de negócio nunca filtra por `tenant_id` "para garantir" nem cruza tenants: a RLS é a
-  fronteira. Query cross-tenant (billing, métricas de plataforma) só em módulo explícito, com spec.
+Schema por barbearia, no desenho do ClaraCRM v2 (`docs/multi-tenant-architecture-v2.md`), com
+acesso por subdomínio personalizado. Spec: `docs/specs/✅completed_identity-schema-per-tenant.md`.
+
+- `public` é **só controle**: catálogo de tenants, chaves do Core, jobs, auditoria, admins da
+  plataforma. Nenhum dado de barbearia ali, nunca.
+- Cada barbearia tem `tenant_<slug>` com as próprias tabelas e enums. **Nenhuma FK cruza schemas.**
+  Tabela de barbearia não tem `tenant_id` nem RLS: o schema é a fronteira.
+- Model de barbearia herda `TenantBase` (schema-marcador `tenant`); model de controle herda
+  `ControlBase`. Nunca misture as duas bases numa FK ou `relationship()`.
+- Dado de barbearia só por `SessionDep` / `tenant_session(schema)`, que qualificam toda query via
+  `schema_translate_map`. **Nunca `SET search_path` em sessão de request** (com pool, vaza para o
+  próximo tenant). SQL cru em tabela de barbearia: qualifique com `quote_identifier(schema)` ou use o
+  ORM.
+- O nome do schema vem **só** de `tenants.schema_name` e passa por `assert_safe_schema_name` antes de
+  qualquer SQL/DDL. Nunca derive de entrada de usuário fora do provisionamento.
+- O tenant vem do host (subdomínio ou `custom_domain`); `X-Tenant-Slug` só com `ENVIRONMENT=dev`.
+  Nunca de body, query ou path. O JWT carrega `tid` e é recusado em outro host.
+- Só tenant `active` com `schema_version` não atrasada é servido (`assert_servable`).
+- O runtime (`navalha_app`) não tem DDL; DDL é do migrator. Barbearias nascem e morrem só pelo control
+  plane (`/core/*`, `X-Core-Key`). `DROP SCHEMA` nunca é automático.
+- Estado em memória de processo (cache, fila, evento) que guarde dado de barbearia é **particionado
+  pelo schema/tenant** — o vazamento real costuma estar aí, não no SQL (doc, Camada 5).
 
 ## Authorization (DEC-004)
 
@@ -33,7 +45,7 @@ Padrões inegociáveis deste projeto. Prevalecem sobre o conhecimento geral da I
 ## Architecture
 
 Monólito modular por feature (DEC-006), no modelo do backend da ClaraAI. Spec:
-`.github/specs/✅completed_backend-modular-architecture.md`.
+`docs/specs/✅completed_backend-modular-architecture.md`.
 
 - `app/core/` é infraestrutura sem regra de negócio e não importa módulo — exceto
   `core/model_registry.py`, que importa todo model (DEC-008).
@@ -51,7 +63,7 @@ Monólito modular por feature (DEC-006), no modelo do backend da ClaraAI. Spec:
   - `cache/` e `jobs/` — só quando o módulo usar Redis ou worker (DEC-006). Chave Redis sempre com
     TTL e prefixo `<modulo>:`.
 - Um módulo importa outro **só pelo `public.py`**. A dependência aponta para baixo; hoje:
-  `<módulos de domínio>` → `identity` → `core`. Comunicação para cima será por evento, com decisão
+  `provisioning` → `identity` → `core`, e todo módulo de domínio novo → `identity`. Comunicação para cima será por evento, com decisão
   registrada quando surgir a primeira necessidade.
 - Dentro do módulo, as camadas apontam para baixo: `router → service → repository → model`.
 - `app/main.py` só cria o app, registra handlers e routers. `app/management/` guarda comandos de
@@ -91,19 +103,31 @@ rota, método, status code, schema de request/response, mensagem de erro que o f
 
 ## Database
 
-- Toda mudança de schema é migration Alembic revisada à mão; `alembic check` limpo no fim.
-- Migration nova de tabela de barbearia: `tenant_id` + `apply_rls(...)` + `GRANT` para o role de
-  runtime (os `ALTER DEFAULT PRIVILEGES` da 0001 já cobrem tabelas novas do schema `public`).
+- Dois conjuntos de migrations (DEC-011): `alembic/control/` (schema `public`) e `alembic/tenant/`
+  (aplicado em cada `tenant_<slug>`). Sempre com `-n control` ou `-n tenant -x schema=...`.
+- Tabela nova de barbearia: migration em `alembic/tenant/versions/`, revisão `tNNNN`
+  (`alembic -n tenant -x schema=tenant_template revision --autogenerate --rev-id t0002 -m "..."`),
+  sem nomear schema. Os privilégios do runtime vêm dos default privileges do provisionamento.
+- Conjunto de tenant **só expand/contract**: os schemas migram um a um e o mesmo build atende versões
+  vizinhas por alguns minutos.
+- Tabela nova de controle: migration em `alembic/control/versions/` (`cNNNN`) com o `GRANT` explícito
+  do que o runtime pode fazer nela (`APP_GRANTS`).
+- Migrations nunca no boot da API: `python -m app.management.migrate --apply` (ou `make migrate`).
+- `alembic check` limpo nos dois conjuntos no fim (`make check-backend` faz isso no `tenant_template`).
 - Enum Postgres sempre com `pg_enum(...)` (`values_callable`), senão grava o nome em vez do valor.
 
 ## Tests
 
 - Testes ficam em `tests/`, um pacote por módulo (`tests/test_<modulo>/`), fora de `app/`.
-- A suíte roda contra o Postgres de desenvolvimento (porta 5433), com slug aleatório por teste
-  (ISS-006).
-- `tests/test_contracts/` guarda snapshots de OpenAPI, da tabela de rotas com as guardas de cada
-  uma e do schema do ORM. Snapshot falhando = comportamento mudou: ache a causa, **nunca** regenere
-  para passar. `UPDATE_CONTRACT_SNAPSHOTS=1` só para mudança intencional e registrada na spec.
+- A suíte roda contra o Postgres de desenvolvimento com o controle migrado. Toda barbearia de teste
+  nasce pelo caminho real (`create_shop` / `provision` em `tests/conftest.py`: control plane → job →
+  convite → aceite) e é destruída no fim da sessão.
+- Todo módulo de domínio novo tem teste de **cruzamento entre duas barbearias** (doc Camada 7): o dado
+  de A nunca aparece, nem é alterável, em B.
+- `tests/test_contracts/` guarda snapshots de OpenAPI público, OpenAPI do control plane, tabela de
+  rotas com as guardas (`require(...)`, `core(...)`) e schema do ORM (controle e tenant). Snapshot
+  falhando = comportamento mudou: ache a causa, **nunca** regenere para passar.
+  `UPDATE_CONTRACT_SNAPSHOTS=1` só para mudança intencional e registrada na spec.
 - Toda regra de negócio de uma spec tem teste.
 
 ## Directory Structure
@@ -114,28 +138,46 @@ backend/
 │   ├── main.py               cria o app, registra handlers e routers. Nada mais.
 │   ├── core/                 infraestrutura sem regra de negócio
 │   │   ├── config.py         Settings (pydantic-settings)
-│   │   ├── database.py       engine, SessionFactory, set_tenant, tenant/platform_session
+│   │   ├── database.py       pool único, tenant_session (schema_translate_map), control_session,
+│   │   │                     migrator_engine, guarda do nome de schema
+│   │   ├── model_base.py     ControlBase (public) · TenantBase (marcador `tenant`) · pg_enum · mixins
+│   │   ├── model_registry.py importa todo model (Alembic) — DEC-008
+│   │   ├── schema_version.py head esperado do conjunto de tenant; is_behind()
 │   │   ├── security.py       argon2id, JWT, tokens opacos
 │   │   ├── exceptions.py     AppError + subclasses e o handler HTTP único
-│   │   ├── model_base.py     Base, pg_enum, uuid_pk, TimestampMixin, TenantMixin
-│   │   └── model_registry.py importa todo model (Alembic) — DEC-008
+│   │   └── rate_limit.py     limitador em memória (por processo)
 │   ├── modules/
-│   │   └── identity/         tenants, unidades, usuários, RBAC, convites, sessões, admin da plataforma
-│   │       ├── router/       auth.py · tenant.py · team.py
-│   │       ├── service/      uma ação por arquivo
-│   │       ├── repository/   tenants · units · users · barbers · refresh_tokens · invites · platform_admins
-│   │       ├── model/        enums · tenant · unit · user · barber · refresh_token · invite · platform_admin
-│   │       ├── dependencies.py  Host → Tenant → sessão com RLS → usuário → permissão
-│   │       ├── permissions.py   mapa cargo → permissão → escopo (DEC-004)
+│   │   ├── identity/         catálogo de tenants, unidades, equipe, RBAC, convites, sessões
+│   │   │   ├── router/       auth.py · tenant.py · team.py
+│   │   │   ├── service/      uma ação por arquivo (inclui bootstrap_tenant para o provisionamento)
+│   │   │   ├── repository/   tenants · units · users · barbers · refresh_tokens · invites · platform_admins
+│   │   │   ├── model/        tenant, platform_admin (controle) · unit, user, barber, refresh_token, invite (tenant)
+│   │   │   ├── dependencies.py  Host → Tenant → servível? → sessão do schema → usuário → permissão
+│   │   │   ├── tenant_naming.py slug ↔ schema (fronteira de injeção de DDL)
+│   │   │   ├── permissions.py   mapa cargo → permissão → escopo (DEC-004)
+│   │   │   ├── schemas.py
+│   │   │   └── public.py
+│   │   └── provisioning/     control plane /core/* (X-Core-Key)
+│   │       ├── router/       tenants.py (fora do /docs público)
+│   │       ├── service/      provision, run_provisioning_job, get/list, change_status, retry,
+│   │       │                 reissue_invite, destroy
+│   │       ├── repository/   catalog · jobs · core_keys · audit
+│   │       ├── model/        core_key · provisioning_job · core_audit_log · enums
+│   │       ├── dependencies.py  autenticação X-Core-Key, escopos, rate limit, auditoria de negadas
 │   │       ├── schemas.py
 │   │       └── public.py
 │   └── management/
-│       └── seed.py           python -m app.management.seed platform-admin
-├── alembic/                  migrations (env.py lê app.core.model_registry)
+│       ├── migrate.py        controle + cada tenant, sequencial e fail-fast
+│       ├── core_key.py       cria/lista/revoga chaves do Core (credencial de banco)
+│       └── seed.py           conta de suporte da plataforma
+├── alembic/
+│   ├── control/              schema public (cNNNN)
+│   └── tenant/               cada tenant_<slug> (tNNNN)
 ├── tests/
-│   ├── conftest.py
+│   ├── conftest.py           provisionamento real + limpeza no fim da sessão
 │   ├── test_contracts/       snapshots + layout dos módulos + mapa de permissões
-│   └── test_identity/
+│   ├── test_identity/
+│   └── test_provisioning/
 ├── docs/                     ENVIRONMENT_VARIABLES.md · PERMISSIONS_MAP.md
 ├── .github/                  camada de contexto da IA (este diretório)
 ├── pyproject.toml            dependências, ruff, pytest, import-linter
@@ -144,8 +186,12 @@ backend/
 
 ## Documentation
 
+- `docs/` do projeto (índice em `docs/README.md`):
+  - `docs/specs/` — planejamento **antes** do código; a spec é o contrato da funcionalidade.
+  - `docs/api/` é **gerada** do OpenAPI (`make docs-api`) e verificada por `tests/test_contracts/test_api_docs.py`; nunca editar à mão.
+  - referências avulsas (`ENVIRONMENT_VARIABLES.md`, `PERMISSIONS_MAP.md`).
 - Código autoexplicativo reduz a necessidade de comentário; documente o "porquê".
-- `README.md` sempre com setup e endpoints atualizados.
+- `README.md` com setup e o estado atual atualizados.
 - Variável de ambiente nova entra em `.env.example` e em `docs/ENVIRONMENT_VARIABLES.md`.
 
 ## Versioning

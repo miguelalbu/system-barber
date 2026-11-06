@@ -91,6 +91,49 @@
         "title": "InviteIn",
         "type": "object"
       },
+      "InviteLookupIn": {
+        "properties": {
+          "token": {
+            "title": "Token",
+            "type": "string"
+          }
+        },
+        "required": [
+          "token"
+        ],
+        "title": "InviteLookupIn",
+        "type": "object"
+      },
+      "InviteLookupOut": {
+        "description": "What the acceptance page shows before asking for a password.",
+        "properties": {
+          "email": {
+            "format": "email",
+            "title": "Email",
+            "type": "string"
+          },
+          "expires_at": {
+            "format": "date-time",
+            "title": "Expires At",
+            "type": "string"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "role": {
+            "$ref": "#/components/schemas/Role"
+          }
+        },
+        "required": [
+          "name",
+          "email",
+          "role",
+          "expires_at"
+        ],
+        "title": "InviteLookupOut",
+        "type": "object"
+      },
       "InviteOut": {
         "properties": {
           "accepted_at": {
@@ -286,79 +329,6 @@
         "title": "RefreshIn",
         "type": "object"
       },
-      "RegisterShop": {
-        "properties": {
-          "email": {
-            "format": "email",
-            "title": "Email",
-            "type": "string"
-          },
-          "owner_name": {
-            "maxLength": 120,
-            "minLength": 2,
-            "title": "Owner Name",
-            "type": "string"
-          },
-          "password": {
-            "maxLength": 128,
-            "minLength": 8,
-            "title": "Password",
-            "type": "string"
-          },
-          "shop_name": {
-            "maxLength": 120,
-            "minLength": 2,
-            "title": "Shop Name",
-            "type": "string"
-          },
-          "slug": {
-            "maxLength": 63,
-            "minLength": 3,
-            "title": "Slug",
-            "type": "string"
-          },
-          "unit_name": {
-            "default": "Unidade principal",
-            "maxLength": 120,
-            "title": "Unit Name",
-            "type": "string"
-          }
-        },
-        "required": [
-          "shop_name",
-          "slug",
-          "owner_name",
-          "email",
-          "password"
-        ],
-        "title": "RegisterShop",
-        "type": "object"
-      },
-      "RegistrationOut": {
-        "properties": {
-          "panel_url": {
-            "title": "Panel Url",
-            "type": "string"
-          },
-          "tenant": {
-            "$ref": "#/components/schemas/TenantOut"
-          },
-          "tokens": {
-            "$ref": "#/components/schemas/TokensOut"
-          },
-          "user": {
-            "$ref": "#/components/schemas/UserOut"
-          }
-        },
-        "required": [
-          "tenant",
-          "user",
-          "tokens",
-          "panel_url"
-        ],
-        "title": "RegistrationOut",
-        "type": "object"
-      },
       "Role": {
         "enum": [
           "owner",
@@ -421,11 +391,13 @@
         "type": "object"
       },
       "TenantStatus": {
+        "description": "Operational lifecycle of a shop (DEC-013). Billing lives in the Core; only\n`active` is served.",
         "enum": [
-          "trial",
+          "provisioning",
           "active",
+          "failed",
           "suspended",
-          "canceled"
+          "archived"
         ],
         "title": "TenantStatus",
         "type": "string"
@@ -609,7 +581,7 @@
     }
   },
   "info": {
-    "description": "System of record for the barbershop SaaS. Multi-tenant with Row-Level Security isolation; the tenant is resolved from the access domain.",
+    "description": "System of record for the barbershop SaaS. Multi-tenant with one PostgreSQL schema per shop; the shop is resolved from its access domain.",
     "title": "Navalha · Core API",
     "version": "0.1.0"
   },
@@ -850,47 +822,6 @@
         ]
       }
     },
-    "/auth/register-shop": {
-      "post": {
-        "operationId": "register_shop_auth_register_shop_post",
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/RegisterShop"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "201": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/RegistrationOut"
-                }
-              }
-            },
-            "description": "Successful Response"
-          },
-          "422": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            },
-            "description": "Validation Error"
-          }
-        },
-        "summary": "Provision a new shop with its first owner",
-        "tags": [
-          "auth"
-        ]
-      }
-    },
     "/health": {
       "get": {
         "operationId": "health_health_get",
@@ -1123,7 +1054,7 @@
     },
     "/team/invites/accept": {
       "post": {
-        "description": "Public route — the caller has no login yet. The tenant comes from the\ndomain, and the invite token has to belong to it.",
+        "description": "Public route — the caller has no login yet. The tenant comes from the\ndomain, and the invite token has to belong to it. Also the owner's first\naccess after provisioning.",
         "operationId": "accept_invite_team_invites_accept_post",
         "parameters": [
           {
@@ -1176,6 +1107,66 @@
           }
         },
         "summary": "Accept an invite and create the login",
+        "tags": [
+          "team"
+        ]
+      }
+    },
+    "/team/invites/lookup": {
+      "post": {
+        "description": "Public route, for the acceptance page to check the link before asking for\na password. The token goes in the body, never in a URL that ends up in logs.",
+        "operationId": "lookup_team_invites_lookup_post",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "x-tenant-slug",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Tenant-Slug"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/InviteLookupIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InviteLookupOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Describe a valid invite without using it",
         "tags": [
           "team"
         ]

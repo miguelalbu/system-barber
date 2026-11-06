@@ -6,9 +6,9 @@ dois projetos, cada um com o **próprio** `CLAUDE.md` e a própria camada de con
 
 | Projeto | Stack | Comece por |
 |---|---|---|
-| `backend/` | FastAPI + PostgreSQL (RLS) — core-api | [`backend/CLAUDE.md`](backend/CLAUDE.md) → `backend/.github/index.toml` |
+| `backend/` | FastAPI + PostgreSQL (schema por barbearia) — core-api | [`backend/CLAUDE.md`](backend/CLAUDE.md) → `backend/.github/index.toml` |
 | `frontend/` | React 18 + Vite + TypeScript — landing e painel | [`frontend/CLAUDE.md`](frontend/CLAUDE.md) → `frontend/.github/index.toml` |
-| `infra/` | init do Postgres (role de runtime sem privilégio) | `backend/.github/memory/decisions.md` (DEC-001) |
+| `infra/` | init do Postgres (role de runtime sem DDL) | `backend/.github/memory/decisions.md` (DEC-012) |
 | `docs/` | desenvolvimento e contribuição, para o repo todo | [`docs/DEVELOPMENT.md`](docs/DEVELOPMENT.md), [`docs/CONTRIBUTING.md`](docs/CONTRIBUTING.md) |
 
 ## Como trabalhar aqui
@@ -16,7 +16,8 @@ dois projetos, cada um com o **próprio** `CLAUDE.md` e a própria camada de con
 1. Identifique o projeto do pedido e siga o `CLAUDE.md` dele (sequência obrigatória, regras,
    portão de testes). Pedido que toca os dois lados segue os dois.
 2. **Funcionalidade nova começa pela spec**, escrita a partir do `_template.md` em
-   `<projeto>/.github/specs/`. Se tocar backend e frontend, a spec existe nas duas pastas, uma
+   `<projeto>/docs/specs/` (cada projeto tem `docs/specs/` para planejamento e `docs/api/` gerada
+   do contrato — índice em `<projeto>/docs/README.md`). Se tocar backend e frontend, a spec existe nas duas pastas, uma
    apontando para a outra (`Espelho no ...:`). Guias: `backend/.github/skills/new-module.md` e
    `frontend/.github/skills/new-feature.md`.
 3. A API é o contrato entre os projetos; o contrato congelado está em

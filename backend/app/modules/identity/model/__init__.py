@@ -1,8 +1,11 @@
 """
 Identity and tenancy tables, one file per aggregate.
 
-Importing this package registers every table on `Base.metadata`; that is what
-`app/core/model_registry.py` relies on.
+Control plane (`ControlBase`, schema `public`): `Tenant`, `PlatformAdmin`.
+Per shop (`TenantBase`, the shop's own schema): everything else.
+
+Importing this package registers every table; `app/core/model_registry.py`
+relies on that.
 """
 
 from app.modules.identity.model.barber import Barber

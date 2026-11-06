@@ -1,10 +1,12 @@
 # Navalha · Core API
 
 Sistema de registro do SaaS de barbearias. FastAPI + PostgreSQL, multi-tenant
-com isolamento por Row-Level Security.
+com **um schema por barbearia** e o `public` só como control plane — o desenho
+do ClaraCRM v2 ([`docs/multi-tenant-architecture-v2.md`](../docs/multi-tenant-architecture-v2.md)),
+com acesso por subdomínio personalizado.
 
-Este primeiro bloco entrega o núcleo de identidade: provisionamento de
-barbearia, login, RBAC e convite de equipe. Agenda, financeiro e CRM entram como
+Este primeiro bloco entrega o núcleo de identidade e o control plane:
+provisionamento de barbearia (schema próprio), login, RBAC e convite de equipe. Agenda, financeiro e CRM entram como
 módulos seguintes, sobre a mesma base de isolamento.
 
 > **Para quem vai desenvolver (pessoa ou IA):** comece por [`CLAUDE.md`](CLAUDE.md)
@@ -29,7 +31,7 @@ Direto na máquina, com o banco no compose:
 ```bash
 docker compose up -d db redis
 make setup-backend                       # cria backend/.venv (na raiz do repo)
-.venv/bin/alembic upgrade head           # Windows: .venv/Scripts/
+.venv/bin/python -m app.management.migrate --apply   # Windows: .venv/Scripts/
 .venv/bin/uvicorn app.main:app --reload
 ```
 
@@ -50,20 +52,25 @@ Monólito modular por feature (DEC-006). Detalhes e regras em
 ```
 app/
 ├── main.py          cria o app e registra os módulos
-├── core/            config, banco + tenant, segurança, exceções, base dos models
+├── core/            config, pool + sessões por schema, segurança, exceções, bases dos models
 ├── modules/
-│   └── identity/    router/ service/ repository/ model/ + schemas.py + public.py
-└── management/      comandos de operador (seed)
+│   ├── identity/    catálogo de tenants, equipe, RBAC, convites, sessões
+│   └── provisioning/ control plane /core/* (X-Core-Key)
+└── management/      migrate (controle + cada tenant) · core_key · seed
+alembic/
+├── control/         schema public
+└── tenant/          cada tenant_<slug>
 tests/
-├── test_contracts/  snapshots de OpenAPI, rotas+guardas, schema; layout dos módulos
-└── test_identity/
+├── test_contracts/  snapshots de OpenAPI (público e core), rotas+guardas, schema; layout
+├── test_identity/
+└── test_provisioning/
 docs/                ENVIRONMENT_VARIABLES.md · PERMISSIONS_MAP.md
 ```
 
 ## Conta de plataforma (super admin)
 
 A conta de suporte da plataforma vive fora de qualquer barbearia e fora do RBAC
-de tenant — é a única tabela de identidade sem RLS. Não nasce de migration nem
+de tenant — fica no `public`, no control plane. Não nasce de migration nem
 de cadastro; é criada pelo seed:
 
 ```bash
@@ -87,65 +94,67 @@ senha, `--update-password` (omitir `--name` mantém o nome atual).
 
 ## Como o isolamento funciona
 
-Três camadas, nesta ordem:
+Decisões DEC-011 a DEC-014 em [`.github/memory/decisions.md`](.github/memory/decisions.md);
+spec em [`docs/specs/`](docs/specs/).
 
-**1. O domínio identifica a barbearia.** Cada uma atende em
-`<slug>.navalha.app`, ou em domínio próprio apontado por CNAME
-(`tenants.custom_domain`). O tenant vem do header `Host` — nunca de algo que o
-cliente escolhe. Como o tenant já é conhecido antes do login, o e-mail pode ser
-único por barbearia e o login não precisa perguntar "qual barbearia?".
-
-**2. A RLS isola os dados.** Toda tabela de barbearia tem `tenant_id` e uma
-policy que o Postgres injeta em toda query:
-
-```sql
-CREATE POLICY tenant_isolation ON users
-    USING (tenant_id = NULLIF(current_setting('app.tenant_id', true), '')::uuid)
-    WITH CHECK (...);
+```
+postgres (um banco)
+├── public              control plane: tenants, core_keys, provisioning_jobs,
+│                       core_audit_log, platform_admins — nenhum dado de barbearia
+├── tenant_central      units, users, user_units, barbers, refresh_tokens,
+│                       invites + os próprios enums + alembic_version
+└── tenant_<slug>       idem, estrutura idêntica; nenhuma FK cruza schemas
 ```
 
-`SELECT * FROM users` sem WHERE já vem filtrado. Esquecer o filtro devolve
-**zero linhas**, nunca dados de outra barbearia.
+**1. O domínio identifica a barbearia.** Cada uma atende no próprio subdomínio
+(`<slug>.navalha.app`) ou em domínio próprio apontado por CNAME
+(`tenants.custom_domain`). O tenant vem do `Host` — nunca de algo que o cliente
+escolhe. O JWT carrega `tid` e é recusado (403) em outro host.
 
-**3. O RBAC limita o que o usuário faz.** Ver abaixo.
+**2. O schema isola os dados.** Toda query de barbearia é qualificada com o
+schema dela pelo `schema_translate_map` do SQLAlchemy — `"tenant_central"."users"`
+no próprio SQL. Nada no caminho de request usa `SET search_path`: com pool de
+conexões, ele sobrevive ao request e o próximo tenant herda (o pior bug possível
+aqui). Os models de barbearia ficam sob o schema-marcador `tenant`; fora de uma
+sessão de barbearia eles apontam para um schema que não existe e **falham**.
 
-### Dois detalhes que fazem a RLS valer ou não valer nada
+**3. O banco recusa o que a aplicação não deve fazer.** A API conecta como
+`navalha_app`, sem DDL; o `PUBLIC` não tem acesso ao `public`; cada barbearia
+tem um role `tenant_<slug>` `NOLOGIN` que só alcança o próprio schema (acesso de
+suporte, `pg_dump`, BI).
 
-Ambos já estão resolvidos no código, mas precisam ser preservados:
+**4. Só barbearia pronta é servida.** `suspended` → 403, `provisioning`/`failed`
+→ 503, `archived` → 404, e schema atrás das migrations do build → 503.
 
-**A aplicação conecta com um role sem privilégio.** Superusuário e dono de
-tabela **ignoram RLS**. O usuário administrativo do Postgres é superusuário por
-padrão — se a API conectar com ele, as policies não fazem nada e o vazamento é
-silencioso. Por isso existem duas URLs:
+**5. O RBAC limita o que o usuário faz.** Ver abaixo.
 
-| Variável | Role | Para quê |
-|---|---|---|
-| `DATABASE_URL` | `navalha_app` | runtime — sem SUPERUSER, sem BYPASSRLS |
-| `DATABASE_URL_MIGRATIONS` | `navalha` | migrations — dono do schema |
+### Ciclo de vida: o control plane
 
-O role de runtime nasce em `infra/postgres/init/01-app-role.sql`, e a migration
-concede os privilégios (com `ALTER DEFAULT PRIVILEGES`, para as tabelas futuras
-já nascerem acessíveis).
+Barbearias nascem e morrem pelo `/core/*`, chamado pelo Core da plataforma com a
+credencial `X-Core-Key` (hash SHA-256, escopos, allowlist de IP, rate limit,
+auditoria de toda chamada). Fora do `/docs` público — o OpenAPI dele fica em
+`GET /core/openapi.json`, atrás da chave.
 
-**O tenant é fixado com `SET LOCAL`, dentro da transação.** Em `app/core/database.py`:
-
-```python
-SELECT set_config('app.tenant_id', :tid, true)   # o `true` é o "local"
+```
+POST /core/tenants  → 202 + job:  schema → migrations → grants e role → unidade
+                                   inicial + convite do dono → active
+GET  /core/tenants/{id}            status, job e o link de primeiro acesso (uma vez)
 ```
 
-Sem o `true`, o valor gruda na conexão do pool e o próximo request — de outra
-barbearia — herda o contexto. É o pior bug possível neste sistema.
+A senha do dono nunca passa pelo contrato: ele recebe um convite de uso único e
+define a senha em `/convite/<token>`. A primeira chave do Core nasce por CLI:
 
-### Quando uma barbearia precisar de banco próprio
+```bash
+make core-key NAME=core-prod SCOPES=tenant:read,tenant:provision
+```
 
-`app/core/database.py` é o **único** lugar que cria sessões. Três regras mantêm essa porta
-aberta sem custo hoje:
+### Migrations
 
-1. `tenant_id` em toda tabela, mesmo que um dia cada banco tenha um tenant só.
-2. Todo acesso passa por `tenant_session()`. Trocar "um banco com RLS" por "um
-   banco por barbearia" é mudança em um arquivo.
-3. Nenhuma query cruza tenants no código de negócio. Quando precisar (billing,
-   métricas da plataforma), isolar em um módulo explícito.
+Dois conjuntos: `alembic/control` (o `public`) e `alembic/tenant` (aplicado em
+cada schema). Nunca no boot da API: o serviço one-shot `migrate` (ou
+`python -m app.management.migrate --apply`) migra o controle e depois cada
+barbearia, em ordem, parando na primeira falha, e grava a versão que cada schema
+reporta em `tenants.schema_version`.
 
 ## RBAC
 
@@ -154,7 +163,7 @@ O código **nunca pergunta o cargo, pergunta a permissão**:
 ```python
 @router.get("/appointments")
 def list_appointments(ctx = Depends(require(P.APPOINTMENT_READ))):
-    q = select(Appointment)                     # tenant já garantido pela RLS
+    q = select(Appointment)                     # sessão já está no schema da barbearia
     if ctx.scope is Scope.OWN:
         q = q.where(Appointment.barber_id == ctx.barber_id)
     elif ctx.scope is Scope.UNIT and not ctx.all_units:
@@ -177,19 +186,21 @@ própria agenda e a própria comissão).
 
 ## Modelo de dados
 
-**Control plane** — sem `tenant_id`, sem RLS:
+**Control plane** — no `public`:
 
-- `tenants` — barbearia, slug, domínio próprio, plano, status
+- `tenants` — barbearia: slug (subdomínio), `schema_name`, domínio próprio,
+  plano, status, `schema_version`, `external_tenant_id` (id no Core)
+- `core_keys`, `provisioning_jobs`, `core_audit_log` — o control plane
 - `platform_admins` — equipe da plataforma, para suporte
 
-**Dados da barbearia** — com `tenant_id` e RLS:
+**Dados da barbearia** — no `tenant_<slug>` dela, sem `tenant_id`:
 
 - `units` — filiais
-- `users` — login da equipe; e-mail único **por barbearia**
+- `users` — login da equipe; e-mail único **na barbearia**
 - `user_units` — unidades visíveis; **vazio = todas**
 - `barbers` — o profissional como recurso de agenda
 - `refresh_tokens` — hash do token, com revogação
-- `invites` — como um usuário nasce sem senha hardcoded
+- `invites` — convites de equipe e o primeiro acesso do dono
 
 Dois pontos que costumam confundir:
 
@@ -216,7 +227,6 @@ assinado por nós.
 ## Endpoints
 
 ```
-POST   /auth/register-shop        provisiona barbearia + primeiro dono (público)
 POST   /auth/login                tenant vem do domínio
 POST   /auth/refresh              rotativo
 POST   /auth/logout               revoga o refresh
@@ -229,10 +239,21 @@ GET    /tenant/units              unidades visíveis
 GET    /team                      membros                      [team:read]
 POST   /team/invites              convida                      [team:manage]
 GET    /team/invites              pendentes                    [team:read]
-POST   /team/invites/accept       cria o login (público)
+POST   /team/invites/lookup       descreve um convite sem gastá-lo (público)
+POST   /team/invites/accept       cria o login (público) — também o 1º acesso do dono
 DELETE /team/{user_id}            desativa                     [team:manage]
 
 GET    /health
+
+Control plane (X-Core-Key, fora do /docs)
+POST   /core/tenants              provisiona (202 + job)       [tenant:provision]
+GET    /core/tenants              lista                        [tenant:read]
+GET    /core/tenants/{id}         status, job, convite (1 vez) [tenant:read]
+POST   /core/tenants/{id}/retry   retoma job que falhou        [tenant:provision]
+POST   /core/tenants/{id}/suspend · /resume                    [tenant:provision]
+POST   /core/tenants/{id}/invite  reemite o convite do dono    [tenant:provision]
+DELETE /core/tenants/{id}         exclui (suspensa + confirm + exported) [tenant:destroy]
+GET    /core/openapi.json         contrato do control plane    [tenant:read]
 ```
 
 Em desenvolvimento, o header `X-Tenant-Slug` substitui o subdomínio, para testar
@@ -241,7 +262,7 @@ com curl sem mexer no `hosts`. Em produção ele é ignorado.
 ```bash
 curl -X POST localhost:8000/auth/login \
   -H 'Content-Type: application/json' -H 'X-Tenant-Slug: central' \
-  -d '{"email":"miguel@central.com","password":"senha-forte-123"}'
+  -d '{"email":"voce@central.com","password":"senha-forte-123"}'
 ```
 
 ## Pendências antes de produção

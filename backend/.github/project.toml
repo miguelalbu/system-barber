@@ -3,7 +3,7 @@
 [project]
 name = "Navalha · Core API"
 version = "0.1.0"
-description = "System of record of the barbershop SaaS: multi-tenant (RLS), identity, RBAC; next: catalog, scheduling, customers, finance, conversations"
+description = "System of record of the barbershop SaaS: multi-tenant (schema per shop), control plane, identity, RBAC; next: catalog, scheduling, customers, finance, conversations"
 type = "api"
 language = "pt-BR"            # docs, specs and user-facing messages; code identifiers in English
 
@@ -20,7 +20,7 @@ docs = "backend/README.md, backend/docs/, docs/ (repo root)"
 [stack]
 languages = ["Python 3.12"]
 frameworks = ["FastAPI", "SQLAlchemy 2 (async)", "Pydantic 2", "Alembic"]
-database = "PostgreSQL 16 with Row-Level Security; Redis 7 (provisioned, not used yet)"
+database = "PostgreSQL 16, one schema per shop + public control plane; Redis 7 (provisioned, not used yet)"
 package_manager = "pip (pyproject.toml)"
 tooling = ["pytest", "ruff", "import-linter", "Docker Compose", "GitHub Actions"]
 

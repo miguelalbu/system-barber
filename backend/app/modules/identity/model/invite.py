@@ -6,15 +6,15 @@ from sqlalchemy.dialects.postgresql import ARRAY
 from sqlalchemy.dialects.postgresql import UUID as PgUUID
 from sqlalchemy.orm import Mapped, mapped_column
 
-from app.core.model_base import Base, TenantMixin, pg_enum, uuid_pk
+from app.core.model_base import TenantBase, pg_enum, uuid_pk
 from app.modules.identity.model.enums import Role
 
 
-class Invite(Base, TenantMixin):
+class Invite(TenantBase):
     """A team invite. This is how a user is born without a seeded password."""
 
     __tablename__ = "invites"
-    __table_args__ = (Index("ix_invite_tenant_email", "tenant_id", "email"),)
+    __table_args__ = (Index("ix_invite_email", "email"),)
 
     id: Mapped[uuid.UUID] = uuid_pk()
     email: Mapped[str] = mapped_column(String(255), nullable=False)

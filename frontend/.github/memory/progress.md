@@ -8,6 +8,7 @@ Estados: `stable` · `in progress` · `blocked` · `planned` · `deprecated`.
 | Feature | Rota | Estado | Atualizado | Notas |
 |---|---|---|---|---|
 | Arquitetura por feature | — | stable | 2026-11-05 | Spec `✅completed_frontend-feature-architecture.md`. `features/` + `shared/` + `app/`; fronteiras no ESLint (provadas com violações de propósito); Vitest com 10 testes. |
+| `auth` — primeiro acesso / convite | `/convite/:token` | stable | 2026-11-05 | **API real.** Valida o link antes de pedir a senha, aceita e entra. Spec `✅completed_frontend-invite-acceptance.md`. Não conferida em navegador ainda. |
 | `auth` — sessão e login | `/entrar` | stable | 2026-11-05 | **API real.** Login, `/auth/me`, renovação única em 401, logout, guarda de rota com retorno ao destino, slug da barbearia em localhost. Spec `✅completed_frontend-auth-session.md`. |
 | `auth` — seleção de unidade | sidebar | stable | 2026-11-05 | Unidades reais do `/auth/me`; opção "Todas as unidades" para quem vê várias. Ainda não filtra nenhum dado (as telas são mock). |
 | `landing` | `/` | stable | 2026-11-05 | Hero, WhatsApp, planos, FAQ, CTA. Conteúdo estático em `model/landing.content.ts`; captura de lead sem backend. |
@@ -26,6 +27,6 @@ Estados: `stable` · `in progress` · `blocked` · `planned` · `deprecated`.
 |---|---|---|
 | Lint | verde | `npm run lint` — ESLint 9 + fronteiras entre features. |
 | Typecheck | verde | `tsc -b --noEmit`, inclui `tests/`. |
-| Testes | 10 verdes (2026-11-05) | `tests/tenant.test.ts`, `unit-selection.test.ts`, `initials.test.ts`. |
+| Testes | 15 verdes (2026-11-05) | `tests/tenant.test.ts`, `unit-selection.test.ts`, `initials.test.ts`, `invite-rules.test.ts`. |
 | Build | verde | `npm run build` (~270 kB JS, ~41 kB CSS). |
 | CI | configurado | `.github/workflows/ci.yml` na raiz do repo. |

@@ -38,6 +38,7 @@ npm run check      # lint + typecheck + test
 | ------------------ | ------------------------------------------------- |
 | `/`                | Landing page (hero, planos, FAQ, captura de lead) |
 | `/entrar`          | Login — **ligado ao backend de verdade**          |
+| `/convite/:token` | Primeiro acesso / aceite de convite — **API real** |
 | `/app/dashboard`   | KPIs, próximos agendamentos, ocupação, conversas  |
 | `/app/agenda`      | Agenda do dia por barbeiro                        |
 | `/app/conversas`   | Central de conversas (WhatsApp + IA)              |
@@ -94,16 +95,12 @@ sessão com `GET /auth/me`. Tudo em `src/features/auth/` e `src/shared/`.
 > refresh em cookie httpOnly com o access em memória, e isso depende de mudança
 > no backend. Está anotado nas pendências.
 
-Para criar um usuário e testar:
-
-```bash
-curl -X POST localhost:8000/auth/register-shop \
-  -H 'Content-Type: application/json' \
-  -d '{"shop_name":"Barbearia Central","slug":"central",
-       "owner_name":"Miguel","email":"miguel@central.com","password":"senha-forte-123"}'
-```
-
-Depois entre em `/entrar` com barbearia `central` e essas credenciais.
+**Primeiro acesso** — barbearias nascem pelo control plane do backend (não há
+cadastro público). O provisionamento devolve um link de convite; a tela
+`/convite/:token` valida o link **antes** de pedir a senha, a pessoa define a
+senha e já entra no painel. A mesma tela serve aos convites de equipe. Passo a
+passo para criar uma barbearia em dev:
+[docs/DEVELOPMENT.md](../docs/DEVELOPMENT.md#primeiro-acesso-ao-painel).
 
 ## Dados que ainda são mock
 

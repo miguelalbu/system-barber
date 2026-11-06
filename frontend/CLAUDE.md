@@ -3,7 +3,7 @@
 Instruções de trabalho para qualquer sessão de agente de IA (Claude Code, Copilot etc.) neste
 projeto.
 
-`.github/specs/` é o plano de execução e a memória arquitetural escrita do projeto.
+`docs/specs/` é o plano de execução e a memória arquitetural escrita do projeto.
 `.github/index.toml` descreve o resto do sistema de instruções (`rules.md`, `soul.md`, `memory/`).
 `.github/rules.md` é a fonte das regras técnicas; este arquivo resume o essencial e aponta para lá.
 
@@ -36,6 +36,7 @@ Comandos (na **raiz do repositório**; ver `make help`):
 | testes | `make test-frontend` |
 | portão completo | `make check-frontend` (lint + typecheck + testes + build) |
 | direto na pasta | `npm run dev` · `npm run lint` · `npm run test` · `npm run build` |
+| API consumida (`docs/api/`) | `make docs-api` (gerada; nunca à mão) |
 
 O painel sobe em `http://localhost:5173`. Em localhost, o login pede a barbearia (slug). Variáveis
 de ambiente: `docs/ENVIRONMENT_VARIABLES.md`.
@@ -59,7 +60,7 @@ daqui desatualizado. Não edite a cada alteração pequena, e só altere com ped
 explícita — se perceber defasagem, avise e proponha o diff.
 
 Este arquivo contém **instruções e convenções**, não um diário de alterações. Decisões de
-funcionalidade e regras de negócio vão para `.github/specs/` e `.github/memory/`.
+funcionalidade e regras de negócio vão para `docs/specs/` e `.github/memory/`.
 
 ### Sistema de contexto `.github/`
 
@@ -76,8 +77,8 @@ funcionalidade e regras de negócio vão para `.github/specs/` e `.github/memory
 
 1. **Ler o código atual** — ele é a fonte da verdade. Antes de editar, leia
    `.github/memory/issues.md`.
-2. **Consultar a spec** — tela, fluxo ou integração nova tem spec em `.github/specs/`. Funcionalidade
-   nova **começa** pela spec (`specs/_template.md`); se consumir API, a spec do backend é o espelho e
+2. **Consultar a spec** — tela, fluxo ou integração nova tem spec em `docs/specs/`. Funcionalidade
+   nova **começa** pela spec (`docs/specs/_template.md`); se consumir API, a spec do backend é o espelho e
    o contrato está em `backend/tests/test_contracts/snapshots/openapi.json`.
 3. **Planejar** — identificar a feature, as pastas (`api/ model/ pages/ ui/`), o que muda no shell e
    no router, e onde mora cada estado.
@@ -85,7 +86,7 @@ funcionalidade e regras de negócio vão para `.github/specs/` e `.github/memory
    feature já tem; não adicione dependência sem aprovação.
 5. **Validar** — `make check-frontend` e a tela conferida no navegador. Uma etapa só termina com
    tudo verde.
-6. **Atualizar a documentação** — checkboxes e status da spec, `memory/progress.md`,
+6. **Atualizar a documentação** — `make docs-api` se uma chamada à API mudou; checkboxes e status da spec, `memory/progress.md`,
    `memory/issues.md`, `memory/decisions.md`, `README.md` (rotas e estado das telas).
 7. **Sinalizar defasagem deste CLAUDE.md** — avise e proponha o diff.
 
@@ -119,7 +120,7 @@ Verifique:
 ## Fonte da verdade
 
 1. **Código atual**
-2. **Specs em `.github/specs/`**
+2. **Specs em `docs/specs/`**
 3. **Decisões explícitas tomadas na conversa**
 4. **Este CLAUDE.md e o resto do sistema de instruções** (`rules.md`, `soul.md`, `memory/`)
 5. **Inferências**

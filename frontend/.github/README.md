@@ -11,6 +11,9 @@ Pasta de contexto para assistentes de IA, no modelo do frontend da ClaraAI.
 
 ## Estrutura
 
+As **specs** e a **referência da API** não ficam aqui: vivem em `../docs/` (ver
+`../docs/README.md`), junto da documentação do projeto. Esta pasta guarda só o que orienta a IA.
+
 ```text
 frontend/.github/
 ├── README.md          ← este arquivo (governança e permissões)
@@ -23,9 +26,6 @@ frontend/.github/
 │   ├── progress.md    ← o que existe e em que estado
 │   ├── issues.md      ← bugs, workarounds, áreas frágeis (ISS-NNN)
 │   └── decisions.md   ← decisões de arquitetura (DEC-NNN), só acrescentar
-├── specs/
-│   ├── _template.md   ← modelo de spec
-│   └── <status>_<dominio>-<feature>.md
 └── skills/
     ├── _template.md
     └── *.md           ← guias de tarefas recorrentes
@@ -43,7 +43,7 @@ frontend/.github/
 | `memory/progress.md` | ✅ | ✅ |
 | `memory/issues.md` | ✅ | ✅ |
 | `memory/decisions.md` | ✅ | ✅ só acrescentar |
-| `specs/*.md` | ✅ | ✅ |
+| `../docs/specs/*.md` | ✅ | ✅ |
 | `skills/*.md` | ✅ | ❌ (só com pedido explícito) |
 
 Arquivos ❌ só mudam com instrução explícita de um humano. Se a IA perceber que um deles está
@@ -53,7 +53,7 @@ desatualizado, ela avisa e propõe o diff.
 
 - Nome: `<ícone><status>_<dominio>-<feature>.md` — `⚪draft_`, `⏳active_`, `✅completed_`.
   Renomeie o arquivo quando o **Status** mudar.
-- Toda funcionalidade nova nasce como spec **antes** do código (`specs/_template.md`).
+- Toda funcionalidade nova nasce como spec **antes** do código (`../docs/specs/_template.md`).
 - Spec que toca backend e frontend tem espelho na pasta do outro projeto, e cada uma aponta para a
   outra no cabeçalho (`Espelho no backend:`).
 - Checkboxes `[ ]` → `[x]` conforme os critérios forem atendidos *e testados*.

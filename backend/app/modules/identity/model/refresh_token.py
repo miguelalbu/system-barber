@@ -5,10 +5,10 @@ from sqlalchemy import DateTime, ForeignKey, Index, String, func
 from sqlalchemy.dialects.postgresql import UUID as PgUUID
 from sqlalchemy.orm import Mapped, mapped_column
 
-from app.core.model_base import Base, TenantMixin, uuid_pk
+from app.core.model_base import TenantBase, uuid_pk
 
 
-class RefreshToken(Base, TenantMixin):
+class RefreshToken(TenantBase):
     """
     Rotating refresh token. Only the hash is stored — a database leak does not
     let anyone forge a session. `revoked_at` gives immediate logout without

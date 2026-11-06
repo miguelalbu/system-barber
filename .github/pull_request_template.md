@@ -4,7 +4,7 @@
 
 ## Spec
 
-<!-- Link para a spec em backend/.github/specs/ e/ou frontend/.github/specs/.
+<!-- Link para a spec em backend/docs/specs/ e/ou frontend/docs/specs/.
      Mudança sem spec só para correção pequena — diga por quê. -->
 
 ## Checklist
@@ -13,6 +13,6 @@
 - [ ] Spec atualizada: checkboxes `[x]` e status/nome do arquivo
 - [ ] `memory/progress.md` atualizado; bugs achados no caminho em `memory/issues.md`
 - [ ] Decisão de arquitetura nova registrada em `memory/decisions.md`
-- [ ] Backend: tabela nova de barbearia com `tenant_id` + RLS e teste de isolamento
+- [ ] Backend: tabela nova de barbearia no conjunto `alembic/tenant` e teste de cruzamento entre duas barbearias
 - [ ] Backend: diff dos snapshots de contrato revisado e descrito na spec
 - [ ] Frontend: tela conferida no navegador

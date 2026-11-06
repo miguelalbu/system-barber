@@ -42,6 +42,7 @@ cd frontend && docker compose up -d
 |---|---|---|---|
 | `web` | `navalha-frontend` | http://localhost:5173 | Vite dev server, com HMR |
 | `core-api` | `navalha-backend` | http://localhost:8000 | FastAPI (docs em `/docs`) |
+| `migrate` | `navalha-backend` | — | one-shot: migra o controle e cada barbearia, e sai |
 | `db` | `navalha-backend` | localhost:**5433** | PostgreSQL 16 |
 | `redis` | `navalha-backend` | localhost:**6380** | Redis 7 |
 
@@ -49,13 +50,15 @@ Os dois projetos compartilham uma rede Docker chamada `navalha`. Quem subir
 primeiro a cria; o outro se conecta. É por ela que o dev server alcança a API
 pelo nome `core-api`.
 
-As migrations rodam sozinhas na subida do `core-api` (`alembic upgrade head`).
+As migrations **não** rodam no boot da API: o serviço one-shot `migrate` roda
+antes dela (controle, depois cada barbearia, em ordem) e encerra. Para rodar de
+novo: `make migrate`.
 
 > Portas 5433 e 6380 de propósito: 5432 e 6379 costumam estar ocupadas por
 > instalações locais.
 
-O frontend também roda sozinho, sem o backend — as telas ainda usam os dados de
-demonstração de `frontend/src/data/`.
+O frontend também roda sozinho, sem o backend — fora o login, as telas usam os
+dados de demonstração de `frontend/src/features/*/api/*.mock.ts`.
 
 ## Dia a dia
 
@@ -80,21 +83,11 @@ docker compose -f frontend/docker-compose.yml build
 
 ```bash
 curl localhost:8000/health
-
-curl -X POST localhost:8000/auth/register-shop \
-  -H 'Content-Type: application/json' \
-  -d '{"shop_name":"Barbearia Central","slug":"central",
-       "owner_name":"Miguel","email":"miguel@central.com","password":"senha-forte-123"}'
 ```
 
-Em desenvolvimento o header `X-Tenant-Slug` substitui o subdomínio, para não
-precisar mexer no `hosts`:
-
-```bash
-curl -X POST localhost:8000/auth/login \
-  -H 'Content-Type: application/json' -H 'X-Tenant-Slug: central' \
-  -d '{"email":"miguel@central.com","password":"senha-forte-123"}'
-```
+Para criar uma barbearia e entrar no painel, siga
+[docs/DEVELOPMENT.md](docs/DEVELOPMENT.md#primeiro-acesso-ao-painel): chave do
+Core → `POST /core/tenants` → link de primeiro acesso → `/convite/<token>`.
 
 ## Imagem de produção do frontend
 
@@ -119,13 +112,16 @@ docker compose -f backend/docker-compose.yml up -d db redis
 
 ## Notas
 
-- **O frontend ainda não consome a API.** As telas rodam com os dados de
-  demonstração de `frontend/src/data/`; `frontend/src/api/client.ts` já tem a
-  ponte pronta e passa a chamar o backend quando `VITE_API_URL` for definida.
+- **Integração:** o login, a sessão e o primeiro acesso (`/convite/:token`)
+  usam a API de verdade; agenda, conversas, cadastros e dashboard ainda usam os
+  dados de demonstração de `frontend/src/features/*/api/*.mock.ts`, até o
+  backend ter os módulos correspondentes.
 - **Convenção de código:** identificadores, tabelas, colunas e rotas da API em
   inglês. Em português ficam as mensagens de erro da API, o texto da interface
   e as URLs que o usuário final vê (`/app/agenda`, `/convite/:token`).
-- **Isolamento entre barbearias** é feito com Row-Level Security do PostgreSQL.
-  Os dois detalhes que fazem isso valer (role de runtime sem privilégio e
-  `SET LOCAL` dentro da transação) estão explicados em
-  [backend/README.md](backend/README.md).
+- **Multi-tenancy:** um schema PostgreSQL por barbearia (`tenant_<slug>`); o
+  `public` é só o control plane. Cada barbearia atende no próprio subdomínio
+  (ou domínio) e nasce pelo control plane `/core/*`, nunca por cadastro
+  público. Detalhes em [backend/README.md](backend/README.md) e
+  [docs/multi-tenant-architecture-v2.md](docs/multi-tenant-architecture-v2.md)
+  (o desenho de referência, do ClaraCRM).

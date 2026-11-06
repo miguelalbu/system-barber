@@ -28,8 +28,8 @@ async def _invite_barber(client, slug, owner_token) -> str:
     return (await login(client, slug, BARBER_EMAIL, BARBER_PASSWORD)).json()["access_token"]
 
 
-async def test_me_returns_role_permissions(client, slug):
-    await create_shop(client, slug, EMAIL, PASSWORD)
+async def test_me_returns_role_permissions(client, core_key, slug):
+    await create_shop(client, core_key, slug, EMAIL, PASSWORD)
     token = (await login(client, slug, EMAIL, PASSWORD)).json()["access_token"]
 
     body = (await client.get("/auth/me", headers=auth(slug, token))).json()
@@ -40,18 +40,18 @@ async def test_me_returns_role_permissions(client, slug):
     assert set(body["permissions"].values()) == {"all"}
 
 
-async def test_wrong_password(client, slug):
-    await create_shop(client, slug, EMAIL, PASSWORD)
+async def test_wrong_password(client, core_key, slug):
+    await create_shop(client, core_key, slug, EMAIL, PASSWORD)
     assert (await login(client, slug, EMAIL, "guess")).status_code == 401
 
 
-async def test_no_token(client, slug):
-    await create_shop(client, slug, EMAIL, PASSWORD)
+async def test_no_token(client, core_key, slug):
+    await create_shop(client, core_key, slug, EMAIL, PASSWORD)
     assert (await client.get("/auth/me", headers={"X-Tenant-Slug": slug})).status_code == 401
 
 
-async def test_refresh_rotates_and_invalidates_previous(client, slug):
-    await create_shop(client, slug, EMAIL, PASSWORD)
+async def test_refresh_rotates_and_invalidates_previous(client, core_key, slug):
+    await create_shop(client, core_key, slug, EMAIL, PASSWORD)
     first = (await login(client, slug, EMAIL, PASSWORD)).json()["refresh_token"]
 
     resp = await client.post(
@@ -68,8 +68,8 @@ async def test_refresh_rotates_and_invalidates_previous(client, slug):
     assert reuse.status_code == 401
 
 
-async def test_logout_revokes(client, slug):
-    await create_shop(client, slug, EMAIL, PASSWORD)
+async def test_logout_revokes(client, core_key, slug):
+    await create_shop(client, core_key, slug, EMAIL, PASSWORD)
     refresh = (await login(client, slug, EMAIL, PASSWORD)).json()["refresh_token"]
 
     out = await client.post(
@@ -83,8 +83,8 @@ async def test_logout_revokes(client, slug):
     assert after.status_code == 401
 
 
-async def test_invite_creates_barber_with_calendar(client, slug):
-    await create_shop(client, slug, EMAIL, PASSWORD)
+async def test_invite_creates_barber_with_calendar(client, core_key, slug):
+    await create_shop(client, core_key, slug, EMAIL, PASSWORD)
     owner = (await login(client, slug, EMAIL, PASSWORD)).json()["access_token"]
 
     created = await client.post(
@@ -113,8 +113,8 @@ async def test_invite_creates_barber_with_calendar(client, slug):
     assert reuse.status_code == 400
 
 
-async def test_barber_cannot_manage_team_or_configure(client, slug):
-    await create_shop(client, slug, EMAIL, PASSWORD)
+async def test_barber_cannot_manage_team_or_configure(client, core_key, slug):
+    await create_shop(client, core_key, slug, EMAIL, PASSWORD)
     owner = (await login(client, slug, EMAIL, PASSWORD)).json()["access_token"]
     barber = await _invite_barber(client, slug, owner)
 
@@ -130,8 +130,8 @@ async def test_barber_cannot_manage_team_or_configure(client, slug):
     assert config.status_code == 403
 
 
-async def test_barber_has_own_scope_on_appointments(client, slug):
-    await create_shop(client, slug, EMAIL, PASSWORD)
+async def test_barber_has_own_scope_on_appointments(client, core_key, slug):
+    await create_shop(client, core_key, slug, EMAIL, PASSWORD)
     owner = (await login(client, slug, EMAIL, PASSWORD)).json()["access_token"]
     barber = await _invite_barber(client, slug, owner)
 
@@ -142,8 +142,8 @@ async def test_barber_has_own_scope_on_appointments(client, slug):
     assert "appointment:cancel" not in permissions
 
 
-async def test_owner_cannot_deactivate_self(client, slug):
-    registration = await create_shop(client, slug, EMAIL, PASSWORD)
+async def test_owner_cannot_deactivate_self(client, core_key, slug):
+    registration = await create_shop(client, core_key, slug, EMAIL, PASSWORD)
     token = (await login(client, slug, EMAIL, PASSWORD)).json()["access_token"]
 
     resp = await client.delete(f"/team/{registration['user']['id']}", headers=auth(slug, token))

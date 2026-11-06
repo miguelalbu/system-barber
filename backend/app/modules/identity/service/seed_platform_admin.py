@@ -3,7 +3,7 @@ Create or update the platform admin (DEC-003).
 
 A platform admin is *our* staff, not a shop's: the account exists outside every
 tenant and outside the tenant RBAC, for cross-tenant support. Its table is the
-only identity table without RLS — so treat the credentials accordingly.
+only identity outside every shop schema — so treat the credentials accordingly.
 
 Unlike the request-scoped services, this one owns its transaction: it is
 driven by the operator CLI (`app/management/seed.py`), not by a route.
@@ -16,7 +16,7 @@ from typing import Literal
 
 from pydantic import EmailStr, TypeAdapter, ValidationError
 
-from app.core.database import platform_session
+from app.core.database import control_session
 from app.core.exceptions import BadRequest
 from app.core.security import hash_password
 from app.modules.identity.model import PlatformAdmin
@@ -78,7 +78,7 @@ async def seed_platform_admin(
             f"(recebeu {len(password)})"
         )
 
-    async with platform_session() as session:
+    async with control_session() as session:
         existing = await admin_repo.find_by_email(session, email)
 
         if existing is not None:

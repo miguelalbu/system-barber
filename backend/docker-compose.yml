@@ -44,17 +44,33 @@ services:
       timeout: 3s
       retries: 10
 
-  core-api:
+  # Migrations are a deliberate step, never part of booting the API (doc
+  # Camada 6): this one-shot service migrates the control plane, then every
+  # shop schema, sequentially and fail-fast — and exits. `make migrate` reruns it.
+  migrate:
     build: .
-    environment:
+    environment: &api-env
       ENVIRONMENT: dev
-      # Runtime connects with an unprivileged role — that is what makes RLS work.
+      # Runtime connects with an unprivileged role, without DDL (DEC-012).
       DATABASE_URL: postgresql+asyncpg://navalha_app:navalha_app@db:5432/navalha
-      # Migrations connect as the schema owner.
+      # Migrations and provisioning DDL connect as the schema owner.
       DATABASE_URL_MIGRATIONS: postgresql+asyncpg://navalha:navalha@db:5432/navalha
       REDIS_URL: redis://redis:6379/0
       JWT_SECRET: dev-secret-nao-use-em-producao
       BASE_DOMAIN: navalha.local
+    networks: [navalha]
+    depends_on:
+      db:
+        condition: service_healthy
+    command: python -m app.management.migrate --apply
+    volumes: &api-volumes
+      - ./app:/srv/app
+      - ./alembic:/srv/alembic
+      - ./alembic.ini:/srv/alembic.ini
+
+  core-api:
+    build: .
+    environment: *api-env
     ports:
       - "8000:8000"
     networks: [navalha]
@@ -63,12 +79,10 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
-    command: >
-      sh -c "alembic upgrade head &&
-             uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload"
-    volumes:
-      - ./app:/srv/app
-      - ./alembic:/srv/alembic
+      migrate:
+        condition: service_completed_successfully
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+    volumes: *api-volumes
 
 networks:
   navalha:
