@@ -31,6 +31,7 @@ dev = [
     "pytest-asyncio>=0.24.0",
     "httpx>=0.27.0",
     "ruff>=0.7.0",
+    "import-linter>=2.1",
 ]
 
 [tool.ruff]
@@ -42,3 +43,32 @@ select = ["E", "F", "I", "UP", "B"]
 
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "function"
+
+# --------------------------------------------------------------------------- #
+# Module boundaries (rules.md, "Architecture"). Run with: lint-imports
+# A new module adds itself to the `containers` of the layers contract.
+# Cross-module "only through public.py" is checked by
+# tests/test_contracts/test_module_layout.py.
+# --------------------------------------------------------------------------- #
+[tool.importlinter]
+root_package = "app"
+
+[[tool.importlinter.contracts]]
+name = "core is infrastructure: it imports no module (except the model registry, DEC-008)"
+type = "forbidden"
+source_modules = ["app.core"]
+forbidden_modules = ["app.modules", "app.main", "app.management"]
+ignore_imports = ["app.core.model_registry -> app.modules.*.model"]
+
+[[tool.importlinter.contracts]]
+name = "inside a module, layers point down: router -> service -> repository -> model"
+type = "layers"
+containers = ["app.modules.identity"]
+layers = ["router", "service", "repository", "model"]
+
+[[tool.importlinter.contracts]]
+name = "modules never import the composition roots"
+type = "forbidden"
+source_modules = ["app.modules"]
+forbidden_modules = ["app.main", "app.management"]

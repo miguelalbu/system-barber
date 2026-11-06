@@ -1,0 +1,42 @@
+# Project identity and metadata. Loaded on EVERY interaction — keep it short.
+
+[project]
+name = "Navalha · Frontend"
+version = "0.1.0"
+description = "Landing page and staff panel of the barbershop SaaS (agenda, conversations, customers, registry, finance)"
+type = "spa"
+language = "pt-BR"            # all UI copy and docs; code identifiers in English
+
+[project.team]
+author = "Miguel Albuquerque"
+company = "Navalha.app"
+
+[project.urls]
+production = "NOT DEPLOYED YET"
+staging = "NOT DEPLOYED YET"
+local = "http://localhost:5173 (landing /, login /entrar, panel /app)"
+docs = "frontend/README.md, frontend/docs/, docs/ (repo root)"
+
+[stack]
+languages = ["TypeScript (strict)"]
+frameworks = ["React 18", "Vite 5", "React Router 6"]
+styling = "plain CSS with design tokens (no CSS framework)"
+package_manager = "npm"
+tooling = ["ESLint 9 (flat config, import boundaries)", "Vitest", "Docker Compose", "nginx (prod image)"]
+
+[environments]
+environment_variables_doc_path = "frontend/docs/ENVIRONMENT_VARIABLES.md"
+
+[design]
+# Source of truth: src/shared/styles/tokens.css — living docs at /app/tokens.
+canvas = "#F4F5F6"
+surface = "#FFFFFF"
+border = "#E3E6E8"
+text = "#16191C"
+muted = "#667077"
+accent = "#175C6B"            # var(--accent): repaints the whole panel
+font_family = "IBM Plex Sans (--font-sans), IBM Plex Mono (--font-mono)"
+type_scale = "26/600 KPI · 15/600 page title · 13/600 section · 13/400 body · 12/400 muted · 11/600 caps header"
+
+[sibling]
+backend = "../backend (FastAPI) — its context layer is backend/.github/; API contract in backend/tests/test_contracts/snapshots/openapi.json"

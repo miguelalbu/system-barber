@@ -1,7 +1,11 @@
 # Navalha.app — frontend
 
 React 18 + Vite + TypeScript. Conversão fiel dos dois protótipos do Claude Design
-(`design-reference/`) em código de produção.
+em código de produção.
+
+> **Para quem vai desenvolver (pessoa ou IA):** comece por [`CLAUDE.md`](CLAUDE.md)
+> e pela camada de contexto em [`.github/`](.github/README.md) — regras, specs,
+> decisões (DEC-NNN) e problemas conhecidos (ISS-NNN).
 
 ## Rodar
 
@@ -13,7 +17,7 @@ docker compose logs -f
 ```
 
 Sobe sozinho, sem o backend: as telas usam os dados de demonstração de
-`src/data/`. Quando o backend está no ar, o dev server proxya `/api` para o
+`src/features/*/api/*.mock.ts`. Quando o backend está no ar, o dev server proxya `/api` para o
 container `core-api` pela rede `navalha`.
 
 Direto na máquina:
@@ -23,6 +27,9 @@ npm install
 npm run dev        # http://localhost:5173
 npm run build      # typecheck + bundle em dist/
 npm run typecheck
+npm run lint       # ESLint + fronteiras entre features
+npm run test       # Vitest (tests/)
+npm run check      # lint + typecheck + test
 ```
 
 ## Rotas
@@ -41,25 +48,35 @@ npm run typecheck
 
 ## Estrutura
 
+Vertical slice por feature (DEC-003). Regras completas em
+[`.github/rules.md`](.github/rules.md); para criar uma feature,
+[`.github/skills/new-feature.md`](.github/skills/new-feature.md).
+
 ```
 src/
-├── styles/tokens.css   Design tokens (cores, espaçamento, raio, fontes)
-├── styles/global.css   Reset e utilitários
-├── types.ts            Tipos de domínio — contrato esperado do backend
-├── data/               Dados de demonstração vindos do protótipo
-├── api/
-│   ├── http.ts         fetch com tenant, bearer e renovação de token
-│   ├── auth.ts         login, /me, logout (endpoints reais)
-│   └── client.ts       endpoints de domínio (ainda mock)
-├── auth/               sessão, guarda de rota e tela de login
-├── landing/            Landing page e suas seções
-└── app/                Painel: shell, componentes e telas
+├── main.tsx           providers + router
+├── app/
+│   ├── router.tsx     rotas → telas, sempre pelo index.ts da feature
+│   └── _shell/        layout do painel (AppLayout, Sidebar, Topbar)
+├── features/<f>/      index.ts (API pública) + api/ model/ pages/ ui/
+│   auth · landing · dashboard · scheduling · conversations
+│   customers · registry · finance · design-system
+└── shared/
+    ├── api/http.ts    fetch com tenant, bearer e renovação de token
+    ├── session/       tokens e slug da barbearia
+    ├── ui/            Icon, Badge/Tag, ModulePlaceholder
+    ├── text/          formatação
+    └── styles/        tokens.css (design tokens), global.css, panel.css
+tests/                 Vitest
 ```
+
+Uma feature só importa outra pelo `index.ts` dela, `shared/` não conhece
+features e features não importam `app/` — o ESLint barra o import errado.
 
 ## Autenticação
 
 O login é real: `/entrar` chama `POST /auth/login`, guarda os tokens e hidrata a
-sessão com `GET /auth/me`. Tudo em `src/auth/` e `src/api/`.
+sessão com `GET /auth/me`. Tudo em `src/features/auth/` e `src/shared/`.
 
 - **Rotas protegidas** — tudo sob `/app` passa por `RequireAuth`, que manda quem
   não tem sessão para `/entrar` e lembra o destino original.
@@ -91,8 +108,9 @@ Depois entre em `/entrar` com barbearia `central` e essas credenciais.
 ## Dados que ainda são mock
 
 O restante do painel (agenda, conversas, cadastros) continua com os dados de
-`src/data/`, porque esses módulos ainda não existem no backend.
-`src/api/client.ts` já tem a ponte pronta para quando existirem.
+`src/features/<f>/api/*.mock.ts`, porque esses módulos ainda não existem no
+backend. Cada módulo novo do backend troca o mock da feature correspondente por
+um `*.api.ts` real — passo a passo em `.github/skills/new-feature.md`.
 
 O dev server proxya `/api` para o backend, removendo o prefixo — o alvo vem de
 `VITE_PROXY_TARGET` (padrão `http://localhost:8000`; no compose, o nome do
@@ -126,4 +144,4 @@ docker run --rm -p 8080:80 navalha-web:prod
   como fazia a prop `accentColor` do protótipo.
 - Os seletores "Demo" da agenda (dia cheio / vazio / conflito) e o botão
   "Selo IA" são controles de demonstração — remova-os quando os dados forem reais.
-- Os protótipos originais ficam em `design-reference/` para consulta.
+- Os protótipos originais não estão versionados neste repositório (ISS-008).

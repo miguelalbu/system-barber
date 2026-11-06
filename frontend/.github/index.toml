@@ -1,0 +1,239 @@
+# index.toml — AI entry point for this folder (frontend).
+# Read this file FIRST in every session. It defines what to load and when,
+# avoiding unnecessary file reads. Paths are relative to frontend/.github/.
+# Triggers are bilingual: the team writes requests in Portuguese.
+
+# LAYER 0 — Loaded on EVERY interaction
+
+[always]
+files = [
+  "/project.toml",   # identity, stack, URLs, design tokens
+  "/rules.md",       # non-negotiable technical standards and the directory layout
+  "/soul.md",        # AI behavior and restrictions
+]
+
+# LAYER 1 — Loaded by task type
+
+[on_onboarding]
+trigger = "onboarding, getting started, overview, project status, where are we, catch me up, visão geral, entender o projeto, estado atual, onde paramos, me atualiza"
+read = [
+  "/memory/progress.md",
+  "/memory/issues.md",
+  "/memory/decisions.md",
+  "/specs/",
+]
+write = []
+
+[on_planning]
+# Plan, design, or write a spec for a new feature.
+trigger = "create, plan, design, new feature, new screen, new page, new component, write spec, spec out, criar, planejar, nova funcionalidade, nova tela, nova página, novo componente, escrever spec, especificar, documentar funcionalidade"
+read = [
+  "/memory/progress.md",     # avoid recreating what already exists
+  "/memory/issues.md",       # avoid repeating past mistakes
+  "/memory/decisions.md",    # previous decisions
+  "/specs/",                 # existing patterns
+  "/skills/",                # how a new feature is built
+]
+write = [
+  "/specs/[feature].md",     # create the feature spec from specs/_template.md
+]
+
+[on_spec_update]
+trigger = "update spec, scope changed, spec diverged, adjust contract, atualizar spec, mudou o escopo, ajustar contrato, a spec está desatualizada"
+read = [
+  "/specs/",
+  "/memory/progress.md",
+]
+write = [
+  "/specs/[feature].md",
+]
+
+[on_implementation]
+trigger = "implement, code, build, develop, finish, implementar, codar, desenvolver, construir, terminar, fazer a funcionalidade, seguir com"
+read = [
+  "/memory/progress.md",
+  "/memory/issues.md",       # fragile areas requiring care
+  "/specs/",                 # the feature contract
+  "/skills/",                # approved patterns
+]
+write = [
+  "/memory/progress.md",     # update state after delivery
+  "/specs/[feature].md",     # mark checklists [ ] → [x], rename on status change
+]
+
+[on_review]
+trigger = "review, audit, check, inspect, code review, revisar, revisão, auditar, verificar, analisar código"
+read = [
+  "/memory/issues.md",
+  "/specs/",
+  "/skills/",
+]
+write = [
+  "/memory/issues.md",       # log issues found
+]
+
+[on_bug]
+trigger = "bug, error, exception, crash, not working, broken, fix, hotfix, workaround, erro, quebrou, não funciona, corrigir, consertar, falha, exceção, gambiarra"
+read = [
+  "/memory/issues.md",       # check if the bug is already known
+  "/memory/progress.md",     # identify the affected area
+  "/specs/",                 # verify the expected contract
+  "/skills/",
+]
+write = [
+  "/memory/issues.md",       # log or close the bug / workaround
+  "/memory/progress.md",
+]
+
+[on_refactor]
+trigger = "refactor, reorganize, clean up, simplify, decouple, technical debt, refatorar, reorganizar, limpar, simplificar, desacoplar, dívida técnica"
+read = [
+  "/memory/progress.md",
+  "/memory/issues.md",
+  "/skills/",
+]
+write = [
+  "/memory/progress.md",
+  "/memory/issues.md",       # remove resolved issues
+]
+
+[on_architecture]
+# Structural decisions: system, API, schemas, database, multi-tenancy.
+trigger = "architecture, project structure, folder structure, state management, routing, api contract, breaking change, arquitetura, estrutura de pastas, gerenciamento de estado, rotas, contrato da API"
+read = [
+  "/memory/decisions.md",
+  "/memory/progress.md",
+  "/specs/",
+]
+write = [
+  "/memory/decisions.md",    # record the decision (append only)
+  "/specs/[feature].md",     # update the contract if it changed
+]
+
+[on_dependency]
+trigger = "add dependency, new library, install, upgrade, remove dependency, nova dependência, nova biblioteca, instalar, atualizar versão, trocar biblioteca"
+read = [
+  "/memory/decisions.md",    # check if already evaluated
+  "/memory/issues.md",
+]
+write = [
+  "/memory/decisions.md",    # record justification and impact
+]
+
+[on_security]
+trigger = "security, authentication, authorization, permission, token, XSS, CSP, secret, segurança, autenticação, autorização, permissão, sessão, segredo, vulnerabilidade"
+read = [
+  "/memory/issues.md",
+  "/memory/decisions.md",
+  "/skills/",
+]
+write = [
+  "/memory/issues.md",       # log vulnerabilities found
+]
+
+[on_performance]
+trigger = "performance, slow, optimize, bundle size, re-render, lazy load, code splitting, lento, otimizar, tamanho do bundle, renderização"
+read = [
+  "/memory/issues.md",
+  "/memory/decisions.md",
+]
+write = [
+  "/memory/issues.md",
+  "/memory/decisions.md",
+]
+
+[on_testing]
+trigger = "test, coverage, vitest, write tests, regression, teste, testes, cobertura, escrever testes, regressão"
+read = [
+  "/memory/progress.md",
+  "/specs/",
+  "/skills/",
+]
+write = [
+  "/memory/progress.md",
+]
+
+[on_design_system]
+trigger = "design system, component, token, color, typography, theme, style, ui, visual, spacing, layout, responsive, css, componente, cor, tipografia, tema, estilo, espaçamento, responsivo"
+read = [
+  "/project.toml",           # design tokens
+  "/skills/",
+  "/specs/",
+]
+write = []
+
+[on_infra]
+trigger = "infra, docker, compose, nginx, vite config, CI, pipeline, deploy, environment, ambiente, variável de ambiente, implantação"
+read = [
+  "/memory/decisions.md",
+  "/memory/issues.md",
+]
+write = [
+  "/memory/decisions.md",
+  "/memory/issues.md",
+]
+
+[on_skill_creation]
+trigger = "create skill, new guide, standardize process, document recurring flow, criar skill, novo guia, padronizar processo"
+read = [
+  "/skills/",
+]
+write = [
+  "/skills/[name].md",
+]
+
+[on_documentation]
+trigger = "write docs, update readme, changelog, JSDoc, documentar, atualizar readme, documentação"
+read = [
+  "/memory/progress.md",
+  "/memory/decisions.md",
+  "/specs/",
+]
+write = [
+  "/memory/progress.md",
+]
+
+[on_release]
+trigger = "release, deploy, version bump, changelog, tag, go live, rollback, lançar, publicar, versão"
+read = [
+  "/memory/progress.md",
+  "/memory/issues.md",
+]
+write = [
+  "/memory/progress.md",
+]
+
+[on_post_mortem]
+trigger = "post mortem, incident, outage, root cause, incidente, fora do ar, causa raiz"
+read = [
+  "/memory/issues.md",
+  "/memory/progress.md",
+  "/memory/decisions.md",
+]
+write = [
+  "/memory/issues.md",
+  "/memory/decisions.md",
+]
+
+[on_research]
+trigger = "research, compare, which is better, evaluate, best practice, POC, spike, pesquisar, comparar, qual é melhor, avaliar, boa prática"
+read = [
+  "/memory/decisions.md",
+]
+write = [
+  "/memory/decisions.md",    # record findings with title, link and impact
+]
+
+# LAYER 2 — Maintenance
+
+[on_context_pruning]
+trigger = "prune context, memory is too long, summarize progress, compactar memória, resumir progresso"
+read = [
+  "/memory/progress.md",
+  "/memory/issues.md",
+  "/memory/decisions.md",
+]
+write = [
+  "/memory/progress.md",
+  "/memory/issues.md",
+]

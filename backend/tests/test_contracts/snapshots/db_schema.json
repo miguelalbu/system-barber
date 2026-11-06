@@ -1,0 +1,726 @@
+{
+  "barbers": {
+    "columns": {
+      "active": {
+        "foreign_keys": [],
+        "index": false,
+        "nullable": false,
+        "primary_key": false,
+        "server_default": null,
+        "type": "BOOLEAN",
+        "unique": false
+      },
+      "created_at": {
+        "foreign_keys": [],
+        "index": false,
+        "nullable": false,
+        "primary_key": false,
+        "server_default": "now()",
+        "type": "DATETIME",
+        "unique": false
+      },
+      "default_commission": {
+        "foreign_keys": [],
+        "index": false,
+        "nullable": false,
+        "primary_key": false,
+        "server_default": null,
+        "type": "NUMERIC(5, 2)",
+        "unique": false
+      },
+      "id": {
+        "foreign_keys": [],
+        "index": false,
+        "nullable": false,
+        "primary_key": true,
+        "server_default": null,
+        "type": "UUID",
+        "unique": false
+      },
+      "initials": {
+        "foreign_keys": [],
+        "index": false,
+        "nullable": false,
+        "primary_key": false,
+        "server_default": null,
+        "type": "VARCHAR(4)",
+        "unique": false
+      },
+      "name": {
+        "foreign_keys": [],
+        "index": false,
+        "nullable": false,
+        "primary_key": false,
+        "server_default": null,
+        "type": "VARCHAR(120)",
+        "unique": false
+      },
+      "tenant_id": {
+        "foreign_keys": [
+          "tenants.id ondelete=CASCADE"
+        ],
+        "index": true,
+        "nullable": false,
+        "primary_key": false,
+        "server_default": null,
+        "type": "UUID",
+        "unique": false
+      },
+      "unit_id": {
+        "foreign_keys": [
+          "units.id ondelete=RESTRICT"
+        ],
+        "index": false,
+        "nullable": false,
+        "primary_key": false,
+        "server_default": null,
+        "type": "UUID",
+        "unique": false
+      },
+      "updated_at": {
+        "foreign_keys": [],
+        "index": false,
+        "nullable": false,
+        "primary_key": false,
+        "server_default": "now()",
+        "type": "DATETIME",
+        "unique": false
+      },
+      "user_id": {
+        "foreign_keys": [
+          "users.id ondelete=SET NULL"
+        ],
+        "index": false,
+        "nullable": true,
+        "primary_key": false,
+        "server_default": null,
+        "type": "UUID",
+        "unique": false
+      }
+    },
+    "constraints": [
+      "UniqueConstraint:uq_barber_user(user_id)"
+    ],
+    "indexes": [
+      "ix_barber_tenant_unit(tenant_id, unit_id)",
+      "ix_barbers_tenant_id(tenant_id)"
+    ]
+  },
+  "invites": {
+    "columns": {
+      "accepted_at": {
+        "foreign_keys": [],
+        "index": false,
+        "nullable": true,
+        "primary_key": false,
+        "server_default": null,
+        "type": "DATETIME",
+        "unique": false
+      },
+      "create_barber": {
+        "foreign_keys": [],
+        "index": false,
+        "nullable": false,
+        "primary_key": false,
+        "server_default": null,
+        "type": "BOOLEAN",
+        "unique": false
+      },
+      "created_at": {
+        "foreign_keys": [],
+        "index": false,
+        "nullable": false,
+        "primary_key": false,
+        "server_default": "now()",
+        "type": "DATETIME",
+        "unique": false
+      },
+      "created_by_id": {
+        "foreign_keys": [
+          "users.id ondelete=SET NULL"
+        ],
+        "index": false,
+        "nullable": true,
+        "primary_key": false,
+        "server_default": null,
+        "type": "UUID",
+        "unique": false
+      },
+      "email": {
+        "foreign_keys": [],
+        "index": false,
+        "nullable": false,
+        "primary_key": false,
+        "server_default": null,
+        "type": "VARCHAR(255)",
+        "unique": false
+      },
+      "expires_at": {
+        "foreign_keys": [],
+        "index": false,
+        "nullable": false,
+        "primary_key": false,
+        "server_default": null,
+        "type": "DATETIME",
+        "unique": false
+      },
+      "id": {
+        "foreign_keys": [],
+        "index": false,
+        "nullable": false,
+        "primary_key": true,
+        "server_default": null,
+        "type": "UUID",
+        "unique": false
+      },
+      "name": {
+        "foreign_keys": [],
+        "index": false,
+        "nullable": false,
+        "primary_key": false,
+        "server_default": null,
+        "type": "VARCHAR(120)",
+        "unique": false
+      },
+      "role": {
+        "enum": {
+          "name": "role",
+          "values": [
+            "owner",
+            "manager",
+            "receptionist",
+            "barber"
+          ]
+        },
+        "foreign_keys": [],
+        "index": false,
+        "nullable": false,
+        "primary_key": false,
+        "server_default": null,
+        "type": "VARCHAR(12)",
+        "unique": false
+      },
+      "tenant_id": {
+        "foreign_keys": [
+          "tenants.id ondelete=CASCADE"
+        ],
+        "index": true,
+        "nullable": false,
+        "primary_key": false,
+        "server_default": null,
+        "type": "UUID",
+        "unique": false
+      },
+      "token_hash": {
+        "foreign_keys": [],
+        "index": false,
+        "nullable": false,
+        "primary_key": false,
+        "server_default": null,
+        "type": "VARCHAR(64)",
+        "unique": true
+      },
+      "unit_ids": {
+        "foreign_keys": [],
+        "index": false,
+        "nullable": false,
+        "primary_key": false,
+        "server_default": null,
+        "type": "ARRAY",
+        "unique": false
+      }
+    },
+    "constraints": [],
+    "indexes": [
+      "ix_invite_tenant_email(tenant_id, email)",
+      "ix_invites_tenant_id(tenant_id)"
+    ]
+  },
+  "platform_admins": {
+    "columns": {
+      "active": {
+        "foreign_keys": [],
+        "index": false,
+        "nullable": false,
+        "primary_key": false,
+        "server_default": null,
+        "type": "BOOLEAN",
+        "unique": false
+      },
+      "created_at": {
+        "foreign_keys": [],
+        "index": false,
+        "nullable": false,
+        "primary_key": false,
+        "server_default": "now()",
+        "type": "DATETIME",
+        "unique": false
+      },
+      "email": {
+        "foreign_keys": [],
+        "index": false,
+        "nullable": false,
+        "primary_key": false,
+        "server_default": null,
+        "type": "VARCHAR(255)",
+        "unique": true
+      },
+      "id": {
+        "foreign_keys": [],
+        "index": false,
+        "nullable": false,
+        "primary_key": true,
+        "server_default": null,
+        "type": "UUID",
+        "unique": false
+      },
+      "name": {
+        "foreign_keys": [],
+        "index": false,
+        "nullable": false,
+        "primary_key": false,
+        "server_default": null,
+        "type": "VARCHAR(120)",
+        "unique": false
+      },
+      "password_hash": {
+        "foreign_keys": [],
+        "index": false,
+        "nullable": false,
+        "primary_key": false,
+        "server_default": null,
+        "type": "VARCHAR(255)",
+        "unique": false
+      },
+      "updated_at": {
+        "foreign_keys": [],
+        "index": false,
+        "nullable": false,
+        "primary_key": false,
+        "server_default": "now()",
+        "type": "DATETIME",
+        "unique": false
+      }
+    },
+    "constraints": [],
+    "indexes": []
+  },
+  "refresh_tokens": {
+    "columns": {
+      "created_at": {
+        "foreign_keys": [],
+        "index": false,
+        "nullable": false,
+        "primary_key": false,
+        "server_default": "now()",
+        "type": "DATETIME",
+        "unique": false
+      },
+      "expires_at": {
+        "foreign_keys": [],
+        "index": false,
+        "nullable": false,
+        "primary_key": false,
+        "server_default": null,
+        "type": "DATETIME",
+        "unique": false
+      },
+      "id": {
+        "foreign_keys": [],
+        "index": false,
+        "nullable": false,
+        "primary_key": true,
+        "server_default": null,
+        "type": "UUID",
+        "unique": false
+      },
+      "revoked_at": {
+        "foreign_keys": [],
+        "index": false,
+        "nullable": true,
+        "primary_key": false,
+        "server_default": null,
+        "type": "DATETIME",
+        "unique": false
+      },
+      "tenant_id": {
+        "foreign_keys": [
+          "tenants.id ondelete=CASCADE"
+        ],
+        "index": true,
+        "nullable": false,
+        "primary_key": false,
+        "server_default": null,
+        "type": "UUID",
+        "unique": false
+      },
+      "token_hash": {
+        "foreign_keys": [],
+        "index": false,
+        "nullable": false,
+        "primary_key": false,
+        "server_default": null,
+        "type": "VARCHAR(64)",
+        "unique": true
+      },
+      "user_id": {
+        "foreign_keys": [
+          "users.id ondelete=CASCADE"
+        ],
+        "index": false,
+        "nullable": false,
+        "primary_key": false,
+        "server_default": null,
+        "type": "UUID",
+        "unique": false
+      }
+    },
+    "constraints": [],
+    "indexes": [
+      "ix_refresh_tokens_tenant_id(tenant_id)",
+      "ix_refresh_user_active(user_id, revoked_at)"
+    ]
+  },
+  "tenants": {
+    "columns": {
+      "created_at": {
+        "foreign_keys": [],
+        "index": false,
+        "nullable": false,
+        "primary_key": false,
+        "server_default": "now()",
+        "type": "DATETIME",
+        "unique": false
+      },
+      "custom_domain": {
+        "foreign_keys": [],
+        "index": false,
+        "nullable": true,
+        "primary_key": false,
+        "server_default": null,
+        "type": "VARCHAR(255)",
+        "unique": true
+      },
+      "id": {
+        "foreign_keys": [],
+        "index": false,
+        "nullable": false,
+        "primary_key": true,
+        "server_default": null,
+        "type": "UUID",
+        "unique": false
+      },
+      "name": {
+        "foreign_keys": [],
+        "index": false,
+        "nullable": false,
+        "primary_key": false,
+        "server_default": null,
+        "type": "VARCHAR(120)",
+        "unique": false
+      },
+      "plan": {
+        "foreign_keys": [],
+        "index": false,
+        "nullable": false,
+        "primary_key": false,
+        "server_default": null,
+        "type": "VARCHAR(40)",
+        "unique": false
+      },
+      "slug": {
+        "foreign_keys": [],
+        "index": false,
+        "nullable": false,
+        "primary_key": false,
+        "server_default": null,
+        "type": "VARCHAR(63)",
+        "unique": true
+      },
+      "status": {
+        "enum": {
+          "name": "tenant_status",
+          "values": [
+            "trial",
+            "active",
+            "suspended",
+            "canceled"
+          ]
+        },
+        "foreign_keys": [],
+        "index": false,
+        "nullable": false,
+        "primary_key": false,
+        "server_default": null,
+        "type": "VARCHAR(9)",
+        "unique": false
+      },
+      "updated_at": {
+        "foreign_keys": [],
+        "index": false,
+        "nullable": false,
+        "primary_key": false,
+        "server_default": "now()",
+        "type": "DATETIME",
+        "unique": false
+      }
+    },
+    "constraints": [],
+    "indexes": []
+  },
+  "units": {
+    "columns": {
+      "active": {
+        "foreign_keys": [],
+        "index": false,
+        "nullable": false,
+        "primary_key": false,
+        "server_default": null,
+        "type": "BOOLEAN",
+        "unique": false
+      },
+      "address": {
+        "foreign_keys": [],
+        "index": false,
+        "nullable": true,
+        "primary_key": false,
+        "server_default": null,
+        "type": "TEXT",
+        "unique": false
+      },
+      "created_at": {
+        "foreign_keys": [],
+        "index": false,
+        "nullable": false,
+        "primary_key": false,
+        "server_default": "now()",
+        "type": "DATETIME",
+        "unique": false
+      },
+      "id": {
+        "foreign_keys": [],
+        "index": false,
+        "nullable": false,
+        "primary_key": true,
+        "server_default": null,
+        "type": "UUID",
+        "unique": false
+      },
+      "name": {
+        "foreign_keys": [],
+        "index": false,
+        "nullable": false,
+        "primary_key": false,
+        "server_default": null,
+        "type": "VARCHAR(120)",
+        "unique": false
+      },
+      "phone": {
+        "foreign_keys": [],
+        "index": false,
+        "nullable": true,
+        "primary_key": false,
+        "server_default": null,
+        "type": "VARCHAR(32)",
+        "unique": false
+      },
+      "tenant_id": {
+        "foreign_keys": [
+          "tenants.id ondelete=CASCADE"
+        ],
+        "index": true,
+        "nullable": false,
+        "primary_key": false,
+        "server_default": null,
+        "type": "UUID",
+        "unique": false
+      },
+      "timezone": {
+        "foreign_keys": [],
+        "index": false,
+        "nullable": false,
+        "primary_key": false,
+        "server_default": null,
+        "type": "VARCHAR(64)",
+        "unique": false
+      },
+      "updated_at": {
+        "foreign_keys": [],
+        "index": false,
+        "nullable": false,
+        "primary_key": false,
+        "server_default": "now()",
+        "type": "DATETIME",
+        "unique": false
+      }
+    },
+    "constraints": [],
+    "indexes": [
+      "ix_units_tenant_id(tenant_id)"
+    ]
+  },
+  "user_units": {
+    "columns": {
+      "id": {
+        "foreign_keys": [],
+        "index": false,
+        "nullable": false,
+        "primary_key": true,
+        "server_default": null,
+        "type": "UUID",
+        "unique": false
+      },
+      "tenant_id": {
+        "foreign_keys": [
+          "tenants.id ondelete=CASCADE"
+        ],
+        "index": true,
+        "nullable": false,
+        "primary_key": false,
+        "server_default": null,
+        "type": "UUID",
+        "unique": false
+      },
+      "unit_id": {
+        "foreign_keys": [
+          "units.id ondelete=CASCADE"
+        ],
+        "index": false,
+        "nullable": false,
+        "primary_key": false,
+        "server_default": null,
+        "type": "UUID",
+        "unique": false
+      },
+      "user_id": {
+        "foreign_keys": [
+          "users.id ondelete=CASCADE"
+        ],
+        "index": false,
+        "nullable": false,
+        "primary_key": false,
+        "server_default": null,
+        "type": "UUID",
+        "unique": false
+      }
+    },
+    "constraints": [
+      "UniqueConstraint:uq_user_unit(user_id, unit_id)"
+    ],
+    "indexes": [
+      "ix_user_units_tenant_id(tenant_id)"
+    ]
+  },
+  "users": {
+    "columns": {
+      "active": {
+        "foreign_keys": [],
+        "index": false,
+        "nullable": false,
+        "primary_key": false,
+        "server_default": null,
+        "type": "BOOLEAN",
+        "unique": false
+      },
+      "created_at": {
+        "foreign_keys": [],
+        "index": false,
+        "nullable": false,
+        "primary_key": false,
+        "server_default": "now()",
+        "type": "DATETIME",
+        "unique": false
+      },
+      "email": {
+        "foreign_keys": [],
+        "index": false,
+        "nullable": false,
+        "primary_key": false,
+        "server_default": null,
+        "type": "VARCHAR(255)",
+        "unique": false
+      },
+      "id": {
+        "foreign_keys": [],
+        "index": false,
+        "nullable": false,
+        "primary_key": true,
+        "server_default": null,
+        "type": "UUID",
+        "unique": false
+      },
+      "last_login_at": {
+        "foreign_keys": [],
+        "index": false,
+        "nullable": true,
+        "primary_key": false,
+        "server_default": null,
+        "type": "DATETIME",
+        "unique": false
+      },
+      "name": {
+        "foreign_keys": [],
+        "index": false,
+        "nullable": false,
+        "primary_key": false,
+        "server_default": null,
+        "type": "VARCHAR(120)",
+        "unique": false
+      },
+      "password_hash": {
+        "foreign_keys": [],
+        "index": false,
+        "nullable": false,
+        "primary_key": false,
+        "server_default": null,
+        "type": "VARCHAR(255)",
+        "unique": false
+      },
+      "role": {
+        "enum": {
+          "name": "role",
+          "values": [
+            "owner",
+            "manager",
+            "receptionist",
+            "barber"
+          ]
+        },
+        "foreign_keys": [],
+        "index": false,
+        "nullable": false,
+        "primary_key": false,
+        "server_default": null,
+        "type": "VARCHAR(12)",
+        "unique": false
+      },
+      "tenant_id": {
+        "foreign_keys": [
+          "tenants.id ondelete=CASCADE"
+        ],
+        "index": true,
+        "nullable": false,
+        "primary_key": false,
+        "server_default": null,
+        "type": "UUID",
+        "unique": false
+      },
+      "updated_at": {
+        "foreign_keys": [],
+        "index": false,
+        "nullable": false,
+        "primary_key": false,
+        "server_default": "now()",
+        "type": "DATETIME",
+        "unique": false
+      }
+    },
+    "constraints": [
+      "UniqueConstraint:uq_user_tenant_email(tenant_id, email)"
+    ],
+    "indexes": [
+      "ix_user_tenant_active(tenant_id, active)",
+      "ix_users_tenant_id(tenant_id)"
+    ]
+  }
+}

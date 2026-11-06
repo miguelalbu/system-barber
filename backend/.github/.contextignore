@@ -1,0 +1,17 @@
+# Files the AI must not read. Secrets first; then generated or bulky noise.
+
+# Secrets and local environment
+.env
+.env.*
+!.env.example
+
+# Generated / caches
+.venv/
+**/__pycache__/
+.pytest_cache/
+.ruff_cache/
+.import_linter_cache/
+*.egg-info/
+
+# Golden snapshots: read them only when a contract test fails, never load them as context
+tests/test_contracts/snapshots/

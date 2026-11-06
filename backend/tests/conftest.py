@@ -3,7 +3,7 @@ import uuid
 import pytest
 from httpx import ASGITransport, AsyncClient
 
-from app.db import engine
+from app.core.database import engine
 from app.main import app
 
 

@@ -6,6 +6,19 @@ SaaS de gestão para barbearias, com atendimento automatizado no WhatsApp.
 frontend/   React 18 + Vite + TypeScript — landing e painel
 backend/    FastAPI + PostgreSQL — core-api (cadastros, agenda, CRM)
 infra/      init do Postgres (role de runtime)
+docs/       desenvolvimento e contribuição
+.github/    CI e templates de issue/PR
+```
+
+Cada projeto tem seu `CLAUDE.md` e sua camada de contexto `.github/` (regras,
+specs, decisões, problemas conhecidos). Comece por [`CLAUDE.md`](CLAUDE.md),
+[`docs/DEVELOPMENT.md`](docs/DEVELOPMENT.md) e
+[`docs/CONTRIBUTING.md`](docs/CONTRIBUTING.md).
+
+```bash
+make help     # todos os atalhos
+make up       # sobe tudo
+make check    # o portão que o CI roda
 ```
 
 ## Subir

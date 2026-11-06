@@ -7,6 +7,10 @@ Este primeiro bloco entrega o núcleo de identidade: provisionamento de
 barbearia, login, RBAC e convite de equipe. Agenda, financeiro e CRM entram como
 módulos seguintes, sobre a mesma base de isolamento.
 
+> **Para quem vai desenvolver (pessoa ou IA):** comece por [`CLAUDE.md`](CLAUDE.md)
+> e pela camada de contexto em [`.github/`](.github/README.md) — regras, specs,
+> decisões (DEC-NNN) e problemas conhecidos (ISS-NNN).
+
 > **Convenção:** código em inglês (identificadores, tabelas, colunas, rotas).
 > Ficam em português: as mensagens de erro da API, porque vão direto para a tela
 > do dono da barbearia, e esta documentação.
@@ -24,14 +28,36 @@ Direto na máquina, com o banco no compose:
 
 ```bash
 docker compose up -d db redis
-python -m venv .venv && ./.venv/Scripts/python.exe -m pip install -e ".[dev]"
-./.venv/Scripts/python.exe -m alembic upgrade head
-./.venv/Scripts/python.exe -m uvicorn app.main:app --reload
+make setup-backend                       # cria backend/.venv (na raiz do repo)
+.venv/bin/alembic upgrade head           # Windows: .venv/Scripts/
+.venv/bin/uvicorn app.main:app --reload
 ```
 
+Verificação (na raiz do repo):
+
 ```bash
-./.venv/Scripts/python.exe -m pytest      # 21 testes
-./.venv/Scripts/python.exe -m ruff check app tests
+make test-backend     # pytest: comportamento + snapshots de contrato
+make lint-backend     # ruff + lint-imports (fronteiras entre módulos)
+make check-backend    # tudo acima + alembic check
+```
+
+## Estrutura
+
+Monólito modular por feature (DEC-006). Detalhes e regras em
+[`.github/rules.md`](.github/rules.md); para criar um módulo novo,
+[`.github/skills/new-module.md`](.github/skills/new-module.md).
+
+```
+app/
+├── main.py          cria o app e registra os módulos
+├── core/            config, banco + tenant, segurança, exceções, base dos models
+├── modules/
+│   └── identity/    router/ service/ repository/ model/ + schemas.py + public.py
+└── management/      comandos de operador (seed)
+tests/
+├── test_contracts/  snapshots de OpenAPI, rotas+guardas, schema; layout dos módulos
+└── test_identity/
+docs/                ENVIRONMENT_VARIABLES.md · PERMISSIONS_MAP.md
 ```
 
 ## Conta de plataforma (super admin)
@@ -41,7 +67,7 @@ de tenant — é a única tabela de identidade sem RLS. Não nasce de migration 
 de cadastro; é criada pelo seed:
 
 ```bash
-docker compose exec core-api python -m app.seed platform-admin \
+docker compose exec core-api python -m app.management.seed platform-admin \
     --email suporte@navalha.app --name "Seu Nome"
 ```
 
@@ -101,7 +127,7 @@ O role de runtime nasce em `infra/postgres/init/01-app-role.sql`, e a migration
 concede os privilégios (com `ALTER DEFAULT PRIVILEGES`, para as tabelas futuras
 já nascerem acessíveis).
 
-**O tenant é fixado com `SET LOCAL`, dentro da transação.** Em `app/db.py`:
+**O tenant é fixado com `SET LOCAL`, dentro da transação.** Em `app/core/database.py`:
 
 ```python
 SELECT set_config('app.tenant_id', :tid, true)   # o `true` é o "local"
@@ -112,7 +138,7 @@ barbearia — herda o contexto. É o pior bug possível neste sistema.
 
 ### Quando uma barbearia precisar de banco próprio
 
-`app/db.py` é o **único** lugar que abre sessão. Três regras mantêm essa porta
+`app/core/database.py` é o **único** lugar que cria sessões. Três regras mantêm essa porta
 aberta sem custo hoje:
 
 1. `tenant_id` em toda tabela, mesmo que um dia cada banco tenha um tenant só.
@@ -135,7 +161,8 @@ def list_appointments(ctx = Depends(require(P.APPOINTMENT_READ))):
         q = q.where(Appointment.unit_id.in_(ctx.units))
 ```
 
-O mapa cargo → permissão vive só em `app/permissions.py`. Cada permissão tem um
+O mapa cargo → permissão vive só em `app/modules/identity/permissions.py`
+(tabela completa em [`docs/PERMISSIONS_MAP.md`](docs/PERMISSIONS_MAP.md)). Cada permissão tem um
 **escopo**, que é o eixo que o RBAC puro não cobre:
 
 | Scope | Alcance |
@@ -218,6 +245,8 @@ curl -X POST localhost:8000/auth/login \
 ```
 
 ## Pendências antes de produção
+
+Acompanhadas, com número, em [`.github/memory/issues.md`](.github/memory/issues.md).
 
 - **`JWT_SECRET`** — gerar com `python -c "import secrets; print(secrets.token_urlsafe(48))"`.
 - **Senha do `navalha_app`** — a de dev está no init SQL; em produção vem de secret.

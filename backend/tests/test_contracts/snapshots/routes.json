@@ -1,0 +1,189 @@
+[
+  {
+    "dependencies": [
+      "resolve_tenant",
+      "get_session",
+      "resolve_tenant"
+    ],
+    "methods": [
+      "POST"
+    ],
+    "path": "/auth/login",
+    "status_code": null
+  },
+  {
+    "dependencies": [
+      "resolve_tenant",
+      "get_session",
+      "resolve_tenant"
+    ],
+    "methods": [
+      "POST"
+    ],
+    "path": "/auth/logout",
+    "status_code": 204
+  },
+  {
+    "dependencies": [
+      "current_user",
+      "resolve_tenant",
+      "get_session",
+      "resolve_tenant",
+      "get_session",
+      "resolve_tenant"
+    ],
+    "methods": [
+      "GET"
+    ],
+    "path": "/auth/me",
+    "status_code": null
+  },
+  {
+    "dependencies": [
+      "resolve_tenant",
+      "get_session",
+      "resolve_tenant"
+    ],
+    "methods": [
+      "POST"
+    ],
+    "path": "/auth/refresh",
+    "status_code": null
+  },
+  {
+    "dependencies": [
+      "get_platform_session"
+    ],
+    "methods": [
+      "POST"
+    ],
+    "path": "/auth/register-shop",
+    "status_code": 201
+  },
+  {
+    "dependencies": [],
+    "methods": [
+      "GET"
+    ],
+    "path": "/health",
+    "status_code": null
+  },
+  {
+    "dependencies": [
+      "require(team:read)",
+      "current_user",
+      "resolve_tenant",
+      "get_session",
+      "resolve_tenant",
+      "get_session",
+      "resolve_tenant"
+    ],
+    "methods": [
+      "GET"
+    ],
+    "path": "/team",
+    "status_code": null
+  },
+  {
+    "dependencies": [
+      "require(team:read)",
+      "current_user",
+      "resolve_tenant",
+      "get_session",
+      "resolve_tenant",
+      "get_session",
+      "resolve_tenant"
+    ],
+    "methods": [
+      "GET"
+    ],
+    "path": "/team/invites",
+    "status_code": null
+  },
+  {
+    "dependencies": [
+      "require(team:manage)",
+      "current_user",
+      "resolve_tenant",
+      "get_session",
+      "resolve_tenant",
+      "get_session",
+      "resolve_tenant"
+    ],
+    "methods": [
+      "POST"
+    ],
+    "path": "/team/invites",
+    "status_code": 201
+  },
+  {
+    "dependencies": [
+      "resolve_tenant",
+      "get_platform_session"
+    ],
+    "methods": [
+      "POST"
+    ],
+    "path": "/team/invites/accept",
+    "status_code": 201
+  },
+  {
+    "dependencies": [
+      "require(team:manage)",
+      "current_user",
+      "resolve_tenant",
+      "get_session",
+      "resolve_tenant",
+      "get_session",
+      "resolve_tenant"
+    ],
+    "methods": [
+      "DELETE"
+    ],
+    "path": "/team/{user_id}",
+    "status_code": 204
+  },
+  {
+    "dependencies": [
+      "current_user",
+      "resolve_tenant",
+      "get_session",
+      "resolve_tenant"
+    ],
+    "methods": [
+      "GET"
+    ],
+    "path": "/tenant",
+    "status_code": null
+  },
+  {
+    "dependencies": [
+      "require(tenant:configure)",
+      "current_user",
+      "resolve_tenant",
+      "get_session",
+      "resolve_tenant",
+      "get_platform_session"
+    ],
+    "methods": [
+      "PATCH"
+    ],
+    "path": "/tenant",
+    "status_code": null
+  },
+  {
+    "dependencies": [
+      "current_user",
+      "resolve_tenant",
+      "get_session",
+      "resolve_tenant",
+      "get_session",
+      "resolve_tenant"
+    ],
+    "methods": [
+      "GET"
+    ],
+    "path": "/tenant/units",
+    "status_code": null
+  }
+]

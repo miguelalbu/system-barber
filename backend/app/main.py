@@ -1,3 +1,5 @@
+"""Creates the FastAPI app and registers the modules. Nothing else lives here."""
+
 import re
 from contextlib import asynccontextmanager
 
@@ -5,9 +7,10 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy import text
 
-from app.config import settings
-from app.db import engine
-from app.routers import auth, team, tenants
+from app.core.config import settings
+from app.core.database import engine
+from app.core.exceptions import register_exception_handlers
+from app.modules.identity.router import routers as identity_routers
 
 
 @asynccontextmanager
@@ -40,9 +43,10 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-app.include_router(auth.router)
-app.include_router(tenants.router)
-app.include_router(team.router)
+register_exception_handlers(app)
+
+for router in identity_routers:
+    app.include_router(router)
 
 
 @app.get("/health", tags=["infra"], summary="Liveness and database connectivity")

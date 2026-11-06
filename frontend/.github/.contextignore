@@ -1,0 +1,13 @@
+# Files the AI must not read. Secrets first; then generated or bulky noise.
+
+# Secrets and local environment
+.env
+.env.*
+!.env.example
+
+# Generated / dependencies
+node_modules/
+dist/
+coverage/
+*.tsbuildinfo
+package-lock.json
