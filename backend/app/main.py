@@ -14,6 +14,7 @@ from app.modules.catalog.router import routers as catalog_routers
 from app.modules.clients.router import routers as clients_routers
 from app.modules.identity.router import routers as identity_routers
 from app.modules.provisioning.router import routers as provisioning_routers
+from app.modules.scheduling.router import routers as scheduling_routers
 
 
 @asynccontextmanager
@@ -48,7 +49,13 @@ app.add_middleware(
 
 register_exception_handlers(app)
 
-for router in [*identity_routers, *catalog_routers, *clients_routers, *provisioning_routers]:
+for router in [
+    *identity_routers,
+    *catalog_routers,
+    *clients_routers,
+    *scheduling_routers,
+    *provisioning_routers,
+]:
     app.include_router(router)
 
 

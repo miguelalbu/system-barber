@@ -55,6 +55,9 @@ class Permission(enum.StrEnum):
     TEAM_MANAGE = "team:manage"
 
     TENANT_CONFIGURE = "tenant:configure"
+    # Opening hours and closures of a unit (PD-33): the owner everywhere, a
+    # manager in their units — without the rest of `tenant:configure`.
+    UNIT_CONFIGURE = "unit:configure"
     SUBSCRIPTION_MANAGE = "subscription:manage"
 
 
@@ -81,6 +84,7 @@ _MANAGER: dict[Permission, Scope] = {
     P.CONVERSATION_REPLY: S.UNIT,
     P.TEAM_READ: S.UNIT,
     P.TEAM_MANAGE: S.UNIT,
+    P.UNIT_CONFIGURE: S.UNIT,
     # No TENANT_CONFIGURE and no SUBSCRIPTION_MANAGE: those belong to the owner.
 }
 

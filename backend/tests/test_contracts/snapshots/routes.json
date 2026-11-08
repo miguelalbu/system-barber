@@ -132,6 +132,38 @@
   },
   {
     "dependencies": [
+      "require(appointment:read)",
+      "current_user",
+      "resolve_tenant",
+      "get_session",
+      "resolve_tenant",
+      "get_session",
+      "resolve_tenant"
+    ],
+    "methods": [
+      "GET"
+    ],
+    "path": "/barbers/{barber_id}/schedule",
+    "status_code": null
+  },
+  {
+    "dependencies": [
+      "require(team:manage)",
+      "current_user",
+      "resolve_tenant",
+      "get_session",
+      "resolve_tenant",
+      "get_session",
+      "resolve_tenant"
+    ],
+    "methods": [
+      "PUT"
+    ],
+    "path": "/barbers/{barber_id}/schedule",
+    "status_code": null
+  },
+  {
+    "dependencies": [
       "require(team:manage)",
       "current_user",
       "resolve_tenant",
@@ -144,6 +176,54 @@
       "PUT"
     ],
     "path": "/barbers/{barber_id}/services",
+    "status_code": null
+  },
+  {
+    "dependencies": [
+      "require(appointment:read)",
+      "current_user",
+      "resolve_tenant",
+      "get_session",
+      "resolve_tenant",
+      "get_session",
+      "resolve_tenant"
+    ],
+    "methods": [
+      "GET"
+    ],
+    "path": "/barbers/{barber_id}/shift-overrides",
+    "status_code": null
+  },
+  {
+    "dependencies": [
+      "require(team:manage)",
+      "current_user",
+      "resolve_tenant",
+      "get_session",
+      "resolve_tenant",
+      "get_session",
+      "resolve_tenant"
+    ],
+    "methods": [
+      "DELETE"
+    ],
+    "path": "/barbers/{barber_id}/shift-overrides/{on_date}",
+    "status_code": 204
+  },
+  {
+    "dependencies": [
+      "require(team:manage)",
+      "current_user",
+      "resolve_tenant",
+      "get_session",
+      "resolve_tenant",
+      "get_session",
+      "resolve_tenant"
+    ],
+    "methods": [
+      "PUT"
+    ],
+    "path": "/barbers/{barber_id}/shift-overrides/{on_date}",
     "status_code": null
   },
   {
@@ -322,6 +402,22 @@
       "GET"
     ],
     "path": "/health",
+    "status_code": null
+  },
+  {
+    "dependencies": [
+      "require(appointment:read)",
+      "current_user",
+      "resolve_tenant",
+      "get_session",
+      "resolve_tenant",
+      "get_session",
+      "resolve_tenant"
+    ],
+    "methods": [
+      "GET"
+    ],
+    "path": "/schedules",
     "status_code": null
   },
   {
@@ -532,7 +628,287 @@
     "methods": [
       "GET"
     ],
+    "path": "/tenant/holidays",
+    "status_code": null
+  },
+  {
+    "dependencies": [
+      "current_user",
+      "resolve_tenant",
+      "get_session",
+      "resolve_tenant",
+      "get_session",
+      "resolve_tenant"
+    ],
+    "methods": [
+      "GET"
+    ],
+    "path": "/tenant/settings",
+    "status_code": null
+  },
+  {
+    "dependencies": [
+      "require(tenant:configure)",
+      "current_user",
+      "resolve_tenant",
+      "get_session",
+      "resolve_tenant",
+      "get_session",
+      "resolve_tenant"
+    ],
+    "methods": [
+      "PATCH"
+    ],
+    "path": "/tenant/settings",
+    "status_code": null
+  },
+  {
+    "dependencies": [
+      "current_user",
+      "resolve_tenant",
+      "get_session",
+      "resolve_tenant",
+      "get_session",
+      "resolve_tenant"
+    ],
+    "methods": [
+      "GET"
+    ],
+    "path": "/tenant/unit-exceptions",
+    "status_code": null
+  },
+  {
+    "dependencies": [
+      "require(unit:configure)",
+      "current_user",
+      "resolve_tenant",
+      "get_session",
+      "resolve_tenant",
+      "get_session",
+      "resolve_tenant"
+    ],
+    "methods": [
+      "POST"
+    ],
+    "path": "/tenant/unit-exceptions",
+    "status_code": 201
+  },
+  {
+    "dependencies": [
+      "require(unit:configure)",
+      "current_user",
+      "resolve_tenant",
+      "get_session",
+      "resolve_tenant",
+      "get_session",
+      "resolve_tenant"
+    ],
+    "methods": [
+      "DELETE"
+    ],
+    "path": "/tenant/unit-exceptions/{exception_id}",
+    "status_code": 204
+  },
+  {
+    "dependencies": [
+      "require(unit:configure)",
+      "current_user",
+      "resolve_tenant",
+      "get_session",
+      "resolve_tenant",
+      "get_session",
+      "resolve_tenant"
+    ],
+    "methods": [
+      "PATCH"
+    ],
+    "path": "/tenant/unit-exceptions/{exception_id}",
+    "status_code": null
+  },
+  {
+    "dependencies": [
+      "current_user",
+      "resolve_tenant",
+      "get_session",
+      "resolve_tenant",
+      "get_session",
+      "resolve_tenant"
+    ],
+    "methods": [
+      "GET"
+    ],
     "path": "/tenant/units",
+    "status_code": null
+  },
+  {
+    "dependencies": [
+      "require(tenant:configure)",
+      "current_user",
+      "resolve_tenant",
+      "get_session",
+      "resolve_tenant",
+      "get_session",
+      "resolve_tenant"
+    ],
+    "methods": [
+      "POST"
+    ],
+    "path": "/tenant/units",
+    "status_code": 201
+  },
+  {
+    "dependencies": [
+      "require(tenant:configure)",
+      "current_user",
+      "resolve_tenant",
+      "get_session",
+      "resolve_tenant",
+      "get_session",
+      "resolve_tenant"
+    ],
+    "methods": [
+      "DELETE"
+    ],
+    "path": "/tenant/units/{unit_id}",
+    "status_code": 204
+  },
+  {
+    "dependencies": [
+      "current_user",
+      "resolve_tenant",
+      "get_session",
+      "resolve_tenant",
+      "get_session",
+      "resolve_tenant"
+    ],
+    "methods": [
+      "GET"
+    ],
+    "path": "/tenant/units/{unit_id}",
+    "status_code": null
+  },
+  {
+    "dependencies": [
+      "require(tenant:configure)",
+      "current_user",
+      "resolve_tenant",
+      "get_session",
+      "resolve_tenant",
+      "get_session",
+      "resolve_tenant"
+    ],
+    "methods": [
+      "PATCH"
+    ],
+    "path": "/tenant/units/{unit_id}",
+    "status_code": null
+  },
+  {
+    "dependencies": [
+      "current_user",
+      "resolve_tenant",
+      "get_session",
+      "resolve_tenant",
+      "get_session",
+      "resolve_tenant"
+    ],
+    "methods": [
+      "GET"
+    ],
+    "path": "/tenant/units/{unit_id}/hours",
+    "status_code": null
+  },
+  {
+    "dependencies": [
+      "require(unit:configure)",
+      "current_user",
+      "resolve_tenant",
+      "get_session",
+      "resolve_tenant",
+      "get_session",
+      "resolve_tenant"
+    ],
+    "methods": [
+      "PUT"
+    ],
+    "path": "/tenant/units/{unit_id}/hours",
+    "status_code": null
+  },
+  {
+    "dependencies": [
+      "require(appointment:read)",
+      "current_user",
+      "resolve_tenant",
+      "get_session",
+      "resolve_tenant",
+      "get_session",
+      "resolve_tenant"
+    ],
+    "methods": [
+      "GET"
+    ],
+    "path": "/time-off",
+    "status_code": null
+  },
+  {
+    "dependencies": [
+      "current_user",
+      "resolve_tenant",
+      "get_session",
+      "resolve_tenant",
+      "get_session",
+      "resolve_tenant"
+    ],
+    "methods": [
+      "POST"
+    ],
+    "path": "/time-off",
+    "status_code": 201
+  },
+  {
+    "dependencies": [
+      "current_user",
+      "resolve_tenant",
+      "get_session",
+      "resolve_tenant",
+      "get_session",
+      "resolve_tenant"
+    ],
+    "methods": [
+      "DELETE"
+    ],
+    "path": "/time-off/{time_off_id}",
+    "status_code": 204
+  },
+  {
+    "dependencies": [
+      "current_user",
+      "resolve_tenant",
+      "get_session",
+      "resolve_tenant",
+      "get_session",
+      "resolve_tenant"
+    ],
+    "methods": [
+      "PATCH"
+    ],
+    "path": "/time-off/{time_off_id}",
+    "status_code": null
+  },
+  {
+    "dependencies": [
+      "require(appointment:read)",
+      "current_user",
+      "resolve_tenant",
+      "get_session",
+      "resolve_tenant",
+      "get_session",
+      "resolve_tenant"
+    ],
+    "methods": [
+      "GET"
+    ],
+    "path": "/working-time",
     "status_code": null
   }
 ]

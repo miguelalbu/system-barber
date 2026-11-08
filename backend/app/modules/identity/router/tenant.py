@@ -6,17 +6,10 @@ from typing import Annotated
 
 from fastapi import APIRouter, Depends
 
-from app.modules.identity.dependencies import (
-    AuthContext,
-    ControlSessionDep,
-    CurrentUser,
-    SessionDep,
-    require,
-)
-from app.modules.identity.model import Tenant, Unit
+from app.modules.identity.dependencies import AuthContext, ControlSessionDep, CurrentUser, require
+from app.modules.identity.model import Tenant
 from app.modules.identity.permissions import Permission
-from app.modules.identity.schemas import TenantOut, TenantUpdate, UnitOut
-from app.modules.identity.service.list_units import list_units
+from app.modules.identity.schemas import TenantOut, TenantUpdate
 from app.modules.identity.service.update_tenant import update_tenant
 
 router = APIRouter(prefix="/tenant", tags=["shop"])
@@ -32,8 +25,3 @@ async def current(ctx: CurrentUser) -> Tenant:
 @router.patch("", response_model=TenantOut, summary="Update shop details")
 async def update(data: TenantUpdate, ctx: Configure, session: ControlSessionDep) -> Tenant:
     return await update_tenant(session, ctx.tenant.id, data)
-
-
-@router.get("/units", response_model=list[UnitOut], summary="Visible units")
-async def units(ctx: CurrentUser, session: SessionDep) -> list[Unit]:
-    return await list_units(session, ctx)

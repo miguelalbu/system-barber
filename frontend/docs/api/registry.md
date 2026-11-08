@@ -2,7 +2,7 @@
 
 # Feature `registry`
 
-Chamadas à API feitas em `src/features/registry/api/registry.api.ts`. Campos, erros e regras de acesso de cada rota estão na referência do backend (links).
+Chamadas à API feitas em `src/features/registry/api/registry.api.ts`, `src/features/registry/api/units.api.ts`. Campos, erros e regras de acesso de cada rota estão na referência do backend (links).
 
 | Função | Rota | Corpo | Resposta | Resumo |
 |---|---|---|---|---|
@@ -17,3 +17,14 @@ Chamadas à API feitas em `src/features/registry/api/registry.api.ts`. Campos, e
 | `deleteService()` | [`DELETE /services/{service_id}`](../../../backend/docs/api/catalog.md#delete-servicesservice_id) | — | `204` — | Delete a service without history |
 | `listUnits()` | [`GET /tenant/units`](../../../backend/docs/api/shop.md#get-tenantunits) | — | `200` `UnitOut`[] | Visible units |
 | `listMembers()` | [`GET /team`](../../../backend/docs/api/team.md#get-team) | — | `200` `MemberOut`[] | Shop members |
+| `listUnitRecords()` | [`GET /tenant/units`](../../../backend/docs/api/shop.md#get-tenantunits) | — | `200` `UnitOut`[] | Visible units |
+| `createUnit()` | [`POST /tenant/units`](../../../backend/docs/api/shop.md#post-tenantunits) | `UnitIn` | `201` `UnitOut` | New unit |
+| `updateUnit()` | [`PATCH /tenant/units/{unit_id}`](../../../backend/docs/api/shop.md#patch-tenantunitsunit_id) | `UnitUpdate` | `200` `UnitOut` | Update a unit |
+| `deleteUnit()` | [`DELETE /tenant/units/{unit_id}`](../../../backend/docs/api/shop.md#delete-tenantunitsunit_id) | — | `204` — | Delete a unit without history |
+| `getUnitHours()` | [`GET /tenant/units/{unit_id}/hours`](../../../backend/docs/api/shop.md#get-tenantunitsunit_idhours) | — | `200` `WeeklyHoursOut` | Weekly hours |
+| `setUnitHours()` | [`PUT /tenant/units/{unit_id}/hours`](../../../backend/docs/api/shop.md#put-tenantunitsunit_idhours) | `WeeklyHoursIn` | `200` `WeeklyHoursOut` | Replace the week |
+| `listUnitExceptions()` | [`GET /tenant/unit-exceptions`](../../../backend/docs/api/shop.md#get-tenantunit-exceptions) | — | `200` `UnitExceptionOut`[] | Holidays and closures |
+| `createUnitExceptions()` | [`POST /tenant/unit-exceptions`](../../../backend/docs/api/shop.md#post-tenantunit-exceptions) | `UnitExceptionIn` | `201` `UnitExceptionOut`[] | Close or open specially on dates |
+| `updateUnitException()` | [`PATCH /tenant/unit-exceptions/{exception_id}`](../../../backend/docs/api/shop.md#patch-tenantunit-exceptionsexception_id) | `UnitExceptionUpdate` | `200` `UnitExceptionOut` | Edit an exception |
+| `deleteUnitException()` | [`DELETE /tenant/unit-exceptions/{exception_id}`](../../../backend/docs/api/shop.md#delete-tenantunit-exceptionsexception_id) | — | `204` — | Delete an exception |
+| `listHolidays()` | [`GET /tenant/holidays`](../../../backend/docs/api/shop.md#get-tenantholidays) | — | `200` `HolidayOut`[] | Suggested national holidays |

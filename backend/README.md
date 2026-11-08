@@ -234,7 +234,33 @@ GET    /auth/me                   usuário, barbearia, unidades e permissões
 
 GET    /tenant                    dados da barbearia
 PATCH  /tenant                    nome e domínio próprio       [tenant:configure]
-GET    /tenant/units              unidades visíveis
+GET    /tenant/units              unidades visíveis (?active=)
+POST   /tenant/units              nova unidade (seg–sáb 09–19) [tenant:configure]
+GET    /tenant/units/{id}         uma unidade
+PATCH  /tenant/units/{id}         dados, fuso, ativa           [tenant:configure]
+DELETE /tenant/units/{id}         só sem histórico             [tenant:configure]
+GET    /tenant/units/{id}/hours   expediente semanal
+PUT    /tenant/units/{id}/hours   troca a semana inteira       [unit:configure]
+GET    /tenant/unit-exceptions    feriados e datas especiais
+POST   /tenant/unit-exceptions    uma por unidade, tudo ou nada [unit:configure]
+PATCH  /tenant/unit-exceptions/{id}                            [unit:configure]
+DELETE /tenant/unit-exceptions/{id}                            [unit:configure]
+GET    /tenant/holidays?year=     feriados nacionais sugeridos
+GET    /tenant/settings           contato e políticas de agendamento
+PATCH  /tenant/settings           parcial                      [tenant:configure]
+
+# Escala e ausências (scheduling)
+GET    /schedules?unit_id=        grade de jornadas            [appointment:read]
+GET    /barbers/{id}/schedule     jornada semanal              [appointment:read]
+PUT    /barbers/{id}/schedule     troca a semana               [team:manage]
+GET    /barbers/{id}/shift-overrides                           [appointment:read]
+PUT    /barbers/{id}/shift-overrides/{date}  turno especial    [team:manage]
+DELETE /barbers/{id}/shift-overrides/{date}                    [team:manage]
+GET    /time-off?from&to          folgas, férias, bloqueios    [appointment:read]
+POST   /time-off                  folga/férias/atestado [team:manage]; bloqueio [appointment:create]
+PATCH  /time-off/{id}             idem pelo tipo
+DELETE /time-off/{id}             idem; bloqueio passado fica
+GET    /working-time?unit_id&from&to  tempo efetivo em UTC     [appointment:read]
 
 GET    /team                      membros                      [team:read]
 POST   /team/invites              convida (cargo barber: barber_id) [team:manage]

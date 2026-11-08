@@ -50,5 +50,6 @@ UPDATE_CONTRACT_SNAPSHOTS=1 .venv/bin/python -m pytest tests/test_contracts/test
 | `team:read` | all | unit | unit | — |
 | `team:manage` | all | unit | — | — |
 | `tenant:configure` | all | — | — | — |
+| `unit:configure` | all | unit | — | — |
 | `subscription:manage` | all | — | — | — |
 <!-- END:permissions -->

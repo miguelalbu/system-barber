@@ -56,6 +56,12 @@ PUBLIC_GROUPS: dict[str, Group] = {
         "Barbearia",
         "Dados e configuração da barbearia da sessão e as unidades visíveis ao usuário.",
     ),
+    "scheduling": Group(
+        "scheduling.md",
+        "Escala e ausências",
+        "Jornada semanal dos barbeiros, turnos especiais de um dia, folgas, férias, atestados e "
+        "bloqueios de horário, e o tempo de trabalho efetivo que a agenda usa.",
+    ),
     "team": Group(
         "team.md",
         "Equipe e convites",

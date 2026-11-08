@@ -20,7 +20,7 @@ estão no espelho do backend; aqui fica só o que é de tela.
 
 | Parâmetro | Valor |
 |---|---|
-| Onde fica cada cadastro | Barbeiros e Serviços: abas de `/app/cadastros` (feature `registry`). Clientes: `/app/clientes` (feature `customers`). |
+| Onde fica cada cadastro | Barbeiros e Serviços: páginas próprias, `/app/cadastros/barbeiros` e `/app/cadastros/servicos`, abertas pelo dropdown "Cadastros" da sidebar (feature `registry`; antes eram abas — mudado em 2026-11-06). Clientes: `/app/clientes` (feature `customers`). |
 | Abas fora do escopo | Unidades, Clubes e combos, Planos continuam como estão (aviso "em breve"). |
 | Formulário | Painel abaixo da tabela, como no protótipo (não modal), para criar e editar. |
 | Apagar | Sempre com confirmação. `409` do backend vira a mensagem dele + botão "Inativar". |

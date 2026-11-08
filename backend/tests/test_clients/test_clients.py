@@ -2,7 +2,7 @@
 
 import pytest
 
-from app.modules.clients.phone import InvalidPhone, normalize_phone
+from app.core.phone import InvalidPhone, normalize_phone
 from tests.conftest import auth, member_token, new_barber, owner_token
 
 JOAO = {"name": "João Silva", "phone": "(11) 98765-4321"}

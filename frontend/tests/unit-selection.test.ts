@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { ALL_UNITS_LABEL, unitLabelsFor } from '@/features/auth/model/unitSelection';
+import { ALL_UNITS_LABEL, unitLabelsFor, unitOptionsFor } from '@/features/auth/model/unitSelection';
 
 const unit = (name: string) => ({ id: name, name, timezone: 'America/Sao_Paulo', active: true });
 
@@ -20,6 +20,16 @@ describe('unitLabelsFor', () => {
     expect(unitLabelsFor({ all_units: false, units: [unit('Centro'), unit('Zona Sul')] })).toEqual([
       'Centro',
       'Zona Sul',
+    ]);
+  });
+});
+
+describe('unitOptionsFor', () => {
+  it('carries the unit ids, null for the aggregate option', () => {
+    expect(unitOptionsFor({ all_units: true, units: [unit('Centro'), unit('Sul')] }).map((o) => o.id)).toEqual([
+      'Centro',
+      'Sul',
+      null,
     ]);
   });
 });

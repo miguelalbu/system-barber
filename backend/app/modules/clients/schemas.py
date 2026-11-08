@@ -8,7 +8,7 @@ from typing import Annotated
 
 from pydantic import AfterValidator, BaseModel, EmailStr, Field, StringConstraints
 
-from app.modules.clients.phone import normalize_phone
+from app.core.phone import normalize_phone
 
 
 def _not_in_the_future(v: date) -> date:

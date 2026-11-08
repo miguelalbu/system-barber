@@ -24,6 +24,8 @@
   --accent-soft: #edf3f4;
   --accent-soft-border: #d3e2e5;
   --accent-ink: #175260;
+  /* Dark end of the active sub-item gradient in the sidebar. */
+  --accent-deep: #0a262d;
 
   /* Status */
   --status-pending-bg: #faf6ec;

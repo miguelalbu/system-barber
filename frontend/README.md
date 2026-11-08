@@ -43,7 +43,9 @@ npm run check      # lint + typecheck + test
 | `/app/agenda`      | Agenda do dia por barbeiro                        |
 | `/app/conversas`   | Central de conversas (WhatsApp + IA)              |
 | `/app/clientes`    | Clientes: busca, cadastro e edição — **API real** |
-| `/app/cadastros`   | Barbeiros e serviços — **API real**               |
+| `/app/agenda/escala`, `/app/agenda/ausencias` | Escala dos barbeiros e ausências — **API real** |
+| `/app/configuracoes` | Configurações (Barbearia, Agendamento) — só `tenant:configure` — **API real** |
+| `/app/cadastros/*` | Um cadastro por página, aberto pelo dropdown "Cadastros" da sidebar (unidades, barbeiros e serviços: **API real**; os demais "em breve") |
 | `/app/financeiro`  | Placeholder (fora do escopo do protótipo)         |
 | `/app/tokens`      | Documentação do design system                     |
 

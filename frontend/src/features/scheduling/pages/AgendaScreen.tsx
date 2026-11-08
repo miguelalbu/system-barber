@@ -3,6 +3,7 @@ import Icon from '@/shared/ui/Icon';
 import { AGENDA_DAY, appointments, barbers } from '../api/scheduling.mock';
 import { useAppointmentModal } from '../model/appointmentModal';
 import type { AgendaDemoState, Appointment, AppointmentStatus } from '../model/scheduling.types';
+import SchedulingTabs from '../ui/SchedulingTabs';
 
 /** Altura de uma hora, em pixels. */
 const ROW = 88;
@@ -67,6 +68,9 @@ export default function AgendaScreen() {
 
   return (
     <div className="agenda">
+      <div className="agenda-tabs">
+        <SchedulingTabs />
+      </div>
       <div className="agenda-toolbar">
         <div className="stepper">
           <button type="button" className="stepper-arrow" aria-label="Dia anterior">

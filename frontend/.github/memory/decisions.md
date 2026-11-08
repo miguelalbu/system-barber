@@ -176,3 +176,20 @@ descartar alterações; filtros, busca e página na URL.
 **Consequences:** As próximas telas reais (agenda, financeiro) seguem o mesmo padrão. Atualização
 otimista fica para quando a latência pedir.
 
+## DEC-011 — Navegação por permissão e `reloadMe` no contexto de autenticação
+
+**Date:** 2026-11-06
+**Status:** accepted
+
+**Context:** A S01 trouxe a primeira tela que só o dono vê (`/app/configuracoes`) e telas que mudam
+dados mostrados na barra lateral (unidades no seletor, nome da barbearia), que vêm do `/auth/me`
+guardado no contexto de autenticação, fora do TanStack Query.
+
+**Decision:**
+- Item do menu pode declarar `permission`; a sidebar esconde o item sem a permissão, e a tela
+  também redireciona quem chega pela URL. "Cadastros" é um dropdown com os cadastros que o usuário
+  pode ler (`visibleRegistries`).
+- O contexto de autenticação expõe `reloadMe()`; mutações que mudam o que o `/auth/me` devolve o
+  chamam ao terminar.
+
+**Consequences:** O resto da navegação por permissão (ISS-005) segue o mesmo padrão na S18.

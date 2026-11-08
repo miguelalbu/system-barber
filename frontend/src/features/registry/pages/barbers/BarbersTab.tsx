@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { useAuth } from '@/features/auth';
 import { errorMessage } from '@/shared/api/errorMessage';
 import { Badge } from '@/shared/ui/Badge';
@@ -169,8 +169,12 @@ export default function BarbersTab() {
                   <Badge kind={b.active ? 'ativo' : 'concluido'}>{b.active ? 'Ativo' : 'Inativo'}</Badge>
                 </td>
                 <td className="col-right">
+                  <span className="row-actions">
+                    <Link className="btn btn-sm" to={`/app/agenda/escala?barbeiro=${b.id}`}>
+                      Escala
+                    </Link>
                   {canWrite ? (
-                    <span className="row-actions">
+                    <>
                       <button type="button" className="btn btn-sm" onClick={() => setEditing(b)}>
                         Editar
                       </button>
@@ -188,8 +192,9 @@ export default function BarbersTab() {
                           Apagar
                         </button>
                       ) : null}
-                    </span>
+                    </>
                   ) : null}
+                  </span>
                 </td>
               </tr>
             ))}

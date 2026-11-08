@@ -19,3 +19,10 @@ class Role(enum.StrEnum):
     MANAGER = "manager"
     RECEPTIONIST = "receptionist"
     BARBER = "barber"
+
+
+class UnitExceptionKind(enum.StrEnum):
+    """What a calendar exception does to a unit's day (spec S01)."""
+
+    CLOSED = "closed"
+    SPECIAL_HOURS = "special_hours"

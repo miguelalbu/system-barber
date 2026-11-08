@@ -12,6 +12,8 @@ interface AuthContextValue {
   me: Me | null;
   signIn: (email: string, password: string, tenantSlug?: string) => Promise<void>;
   signOut: () => Promise<void>;
+  /** Fetch `/auth/me` again — after a change it reflects (units, the shop's name). */
+  reloadMe: () => Promise<void>;
   /** Scope the role has for the permission, or null when it lacks it. */
   can: (permission: string) => PermissionScope | null;
 }
@@ -84,14 +86,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setStatus('anonymous');
   }, []);
 
+  const reloadMe = useCallback(async () => {
+    setMe(await authApi.fetchMe());
+  }, []);
+
   const can = useCallback(
     (permission: string) => me?.permissions[permission] ?? null,
     [me],
   );
 
   const value = useMemo(
-    () => ({ status, me, signIn, signOut, can }),
-    [status, me, signIn, signOut, can],
+    () => ({ status, me, signIn, signOut, reloadMe, can }),
+    [status, me, signIn, signOut, reloadMe, can],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

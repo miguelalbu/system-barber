@@ -1,5 +1,9 @@
 """
-Phone numbers in E.164 — the key the WhatsApp channel finds a client by.
+Phone numbers in E.164 — the key the WhatsApp channel finds a client by, and
+the format of every phone the shop stores (units, contact, clients).
+
+Infrastructure, not a business rule, so it lives in `core` and any module may
+use it (spec identity-units-hours, T5).
 
 Kept dependency-free on purpose: the shops are Brazilian, so the only
 inference is "10 or 11 digits = a Brazilian number with area code". Anything

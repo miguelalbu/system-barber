@@ -524,6 +524,263 @@
         "ix_barber_service_service(service_id)"
       ]
     },
+    "tenant.barber_shift_overrides": {
+      "columns": {
+        "barber_id": {
+          "foreign_keys": [
+            "barbers.id ondelete=CASCADE"
+          ],
+          "index": false,
+          "nullable": false,
+          "primary_key": false,
+          "server_default": null,
+          "type": "UUID",
+          "unique": false
+        },
+        "created_at": {
+          "foreign_keys": [],
+          "index": false,
+          "nullable": false,
+          "primary_key": false,
+          "server_default": "now()",
+          "type": "DATETIME",
+          "unique": false
+        },
+        "created_by_user_id": {
+          "foreign_keys": [
+            "users.id ondelete=SET NULL"
+          ],
+          "index": false,
+          "nullable": true,
+          "primary_key": false,
+          "server_default": null,
+          "type": "UUID",
+          "unique": false
+        },
+        "ends_at": {
+          "foreign_keys": [],
+          "index": false,
+          "nullable": false,
+          "primary_key": false,
+          "server_default": null,
+          "type": "TIME",
+          "unique": false
+        },
+        "id": {
+          "foreign_keys": [],
+          "index": false,
+          "nullable": false,
+          "primary_key": true,
+          "server_default": null,
+          "type": "UUID",
+          "unique": false
+        },
+        "on_date": {
+          "foreign_keys": [],
+          "index": false,
+          "nullable": false,
+          "primary_key": false,
+          "server_default": null,
+          "type": "DATE",
+          "unique": false
+        },
+        "reason": {
+          "foreign_keys": [],
+          "index": false,
+          "nullable": true,
+          "primary_key": false,
+          "server_default": null,
+          "type": "VARCHAR(120)",
+          "unique": false
+        },
+        "starts_at": {
+          "foreign_keys": [],
+          "index": false,
+          "nullable": false,
+          "primary_key": false,
+          "server_default": null,
+          "type": "TIME",
+          "unique": false
+        }
+      },
+      "constraints": [
+        "CheckConstraint:ck_shift_override_interval()"
+      ],
+      "indexes": [
+        "ix_shift_override_barber_date(barber_id, on_date)"
+      ]
+    },
+    "tenant.barber_time_off": {
+      "columns": {
+        "all_day": {
+          "foreign_keys": [],
+          "index": false,
+          "nullable": false,
+          "primary_key": false,
+          "server_default": null,
+          "type": "BOOLEAN",
+          "unique": false
+        },
+        "barber_id": {
+          "foreign_keys": [
+            "barbers.id ondelete=CASCADE"
+          ],
+          "index": false,
+          "nullable": false,
+          "primary_key": false,
+          "server_default": null,
+          "type": "UUID",
+          "unique": false
+        },
+        "created_at": {
+          "foreign_keys": [],
+          "index": false,
+          "nullable": false,
+          "primary_key": false,
+          "server_default": "now()",
+          "type": "DATETIME",
+          "unique": false
+        },
+        "created_by_user_id": {
+          "foreign_keys": [
+            "users.id ondelete=SET NULL"
+          ],
+          "index": false,
+          "nullable": true,
+          "primary_key": false,
+          "server_default": null,
+          "type": "UUID",
+          "unique": false
+        },
+        "ends_at": {
+          "foreign_keys": [],
+          "index": false,
+          "nullable": false,
+          "primary_key": false,
+          "server_default": null,
+          "type": "DATETIME",
+          "unique": false
+        },
+        "id": {
+          "foreign_keys": [],
+          "index": false,
+          "nullable": false,
+          "primary_key": true,
+          "server_default": null,
+          "type": "UUID",
+          "unique": false
+        },
+        "kind": {
+          "enum": {
+            "name": "time_off_kind",
+            "schema": "tenant",
+            "values": [
+              "day_off",
+              "vacation",
+              "sick_leave",
+              "block"
+            ]
+          },
+          "foreign_keys": [],
+          "index": false,
+          "nullable": false,
+          "primary_key": false,
+          "server_default": null,
+          "type": "VARCHAR(10)",
+          "unique": false
+        },
+        "reason": {
+          "foreign_keys": [],
+          "index": false,
+          "nullable": true,
+          "primary_key": false,
+          "server_default": null,
+          "type": "VARCHAR(200)",
+          "unique": false
+        },
+        "starts_at": {
+          "foreign_keys": [],
+          "index": false,
+          "nullable": false,
+          "primary_key": false,
+          "server_default": null,
+          "type": "DATETIME",
+          "unique": false
+        },
+        "updated_at": {
+          "foreign_keys": [],
+          "index": false,
+          "nullable": false,
+          "primary_key": false,
+          "server_default": "now()",
+          "type": "DATETIME",
+          "unique": false
+        }
+      },
+      "constraints": [
+        "CheckConstraint:ck_time_off_range()",
+        "ExcludeConstraint:ex_time_off_overlap(barber_id)"
+      ],
+      "indexes": []
+    },
+    "tenant.barber_work_hours": {
+      "columns": {
+        "barber_id": {
+          "foreign_keys": [
+            "barbers.id ondelete=CASCADE"
+          ],
+          "index": false,
+          "nullable": false,
+          "primary_key": false,
+          "server_default": null,
+          "type": "UUID",
+          "unique": false
+        },
+        "ends_at": {
+          "foreign_keys": [],
+          "index": false,
+          "nullable": false,
+          "primary_key": false,
+          "server_default": null,
+          "type": "TIME",
+          "unique": false
+        },
+        "id": {
+          "foreign_keys": [],
+          "index": false,
+          "nullable": false,
+          "primary_key": true,
+          "server_default": null,
+          "type": "UUID",
+          "unique": false
+        },
+        "starts_at": {
+          "foreign_keys": [],
+          "index": false,
+          "nullable": false,
+          "primary_key": false,
+          "server_default": null,
+          "type": "TIME",
+          "unique": false
+        },
+        "weekday": {
+          "foreign_keys": [],
+          "index": false,
+          "nullable": false,
+          "primary_key": false,
+          "server_default": null,
+          "type": "SMALLINT",
+          "unique": false
+        }
+      },
+      "constraints": [
+        "CheckConstraint:ck_barber_hours_interval()",
+        "CheckConstraint:ck_barber_hours_weekday()"
+      ],
+      "indexes": [
+        "ix_barber_hours_barber_weekday(barber_id, weekday)"
+      ]
+    },
     "tenant.barbers": {
       "columns": {
         "active": {
@@ -985,6 +1242,318 @@
         "uq_service_name() unique"
       ]
     },
+    "tenant.shop_settings": {
+      "columns": {
+        "about": {
+          "foreign_keys": [],
+          "index": false,
+          "nullable": true,
+          "primary_key": false,
+          "server_default": null,
+          "type": "VARCHAR(1000)",
+          "unique": false
+        },
+        "barber_sees_client_contact": {
+          "foreign_keys": [],
+          "index": false,
+          "nullable": false,
+          "primary_key": false,
+          "server_default": "false",
+          "type": "BOOLEAN",
+          "unique": false
+        },
+        "client_change_min_hours": {
+          "foreign_keys": [],
+          "index": false,
+          "nullable": false,
+          "primary_key": false,
+          "server_default": "2",
+          "type": "SMALLINT",
+          "unique": false
+        },
+        "confirmation_deadline_hours": {
+          "foreign_keys": [],
+          "index": false,
+          "nullable": false,
+          "primary_key": false,
+          "server_default": "3",
+          "type": "SMALLINT",
+          "unique": false
+        },
+        "contact_phone": {
+          "foreign_keys": [],
+          "index": false,
+          "nullable": true,
+          "primary_key": false,
+          "server_default": null,
+          "type": "VARCHAR(16)",
+          "unique": false
+        },
+        "id": {
+          "foreign_keys": [],
+          "index": false,
+          "nullable": false,
+          "primary_key": true,
+          "server_default": null,
+          "type": "SMALLINT",
+          "unique": false
+        },
+        "instagram": {
+          "foreign_keys": [],
+          "index": false,
+          "nullable": true,
+          "primary_key": false,
+          "server_default": null,
+          "type": "VARCHAR(60)",
+          "unique": false
+        },
+        "late_tolerance_minutes": {
+          "foreign_keys": [],
+          "index": false,
+          "nullable": false,
+          "primary_key": false,
+          "server_default": "10",
+          "type": "SMALLINT",
+          "unique": false
+        },
+        "max_advance_days": {
+          "foreign_keys": [],
+          "index": false,
+          "nullable": false,
+          "primary_key": false,
+          "server_default": "30",
+          "type": "SMALLINT",
+          "unique": false
+        },
+        "max_future_appointments_per_client": {
+          "foreign_keys": [],
+          "index": false,
+          "nullable": false,
+          "primary_key": false,
+          "server_default": "3",
+          "type": "SMALLINT",
+          "unique": false
+        },
+        "min_advance_minutes": {
+          "foreign_keys": [],
+          "index": false,
+          "nullable": false,
+          "primary_key": false,
+          "server_default": "60",
+          "type": "SMALLINT",
+          "unique": false
+        },
+        "updated_at": {
+          "foreign_keys": [],
+          "index": false,
+          "nullable": false,
+          "primary_key": false,
+          "server_default": "now()",
+          "type": "DATETIME",
+          "unique": false
+        },
+        "updated_by_user_id": {
+          "foreign_keys": [
+            "users.id ondelete=SET NULL"
+          ],
+          "index": false,
+          "nullable": true,
+          "primary_key": false,
+          "server_default": null,
+          "type": "UUID",
+          "unique": false
+        }
+      },
+      "constraints": [
+        "CheckConstraint:ck_shop_settings_client_change()",
+        "CheckConstraint:ck_shop_settings_confirmation()",
+        "CheckConstraint:ck_shop_settings_future_limit()",
+        "CheckConstraint:ck_shop_settings_late()",
+        "CheckConstraint:ck_shop_settings_max_advance()",
+        "CheckConstraint:ck_shop_settings_min_advance()",
+        "CheckConstraint:ck_shop_settings_single_row()"
+      ],
+      "indexes": []
+    },
+    "tenant.unit_business_hours": {
+      "columns": {
+        "closes_at": {
+          "foreign_keys": [],
+          "index": false,
+          "nullable": false,
+          "primary_key": false,
+          "server_default": null,
+          "type": "TIME",
+          "unique": false
+        },
+        "id": {
+          "foreign_keys": [],
+          "index": false,
+          "nullable": false,
+          "primary_key": true,
+          "server_default": null,
+          "type": "UUID",
+          "unique": false
+        },
+        "opens_at": {
+          "foreign_keys": [],
+          "index": false,
+          "nullable": false,
+          "primary_key": false,
+          "server_default": null,
+          "type": "TIME",
+          "unique": false
+        },
+        "unit_id": {
+          "foreign_keys": [
+            "units.id ondelete=CASCADE"
+          ],
+          "index": false,
+          "nullable": false,
+          "primary_key": false,
+          "server_default": null,
+          "type": "UUID",
+          "unique": false
+        },
+        "weekday": {
+          "foreign_keys": [],
+          "index": false,
+          "nullable": false,
+          "primary_key": false,
+          "server_default": null,
+          "type": "SMALLINT",
+          "unique": false
+        }
+      },
+      "constraints": [
+        "CheckConstraint:ck_unit_hours_interval()",
+        "CheckConstraint:ck_unit_hours_weekday()"
+      ],
+      "indexes": [
+        "ix_unit_hours_unit_weekday(unit_id, weekday)"
+      ]
+    },
+    "tenant.unit_exceptions": {
+      "columns": {
+        "closes_at": {
+          "foreign_keys": [],
+          "index": false,
+          "nullable": true,
+          "primary_key": false,
+          "server_default": null,
+          "type": "TIME",
+          "unique": false
+        },
+        "created_at": {
+          "foreign_keys": [],
+          "index": false,
+          "nullable": false,
+          "primary_key": false,
+          "server_default": "now()",
+          "type": "DATETIME",
+          "unique": false
+        },
+        "created_by_user_id": {
+          "foreign_keys": [
+            "users.id ondelete=SET NULL"
+          ],
+          "index": false,
+          "nullable": true,
+          "primary_key": false,
+          "server_default": null,
+          "type": "UUID",
+          "unique": false
+        },
+        "ends_on": {
+          "foreign_keys": [],
+          "index": false,
+          "nullable": false,
+          "primary_key": false,
+          "server_default": null,
+          "type": "DATE",
+          "unique": false
+        },
+        "id": {
+          "foreign_keys": [],
+          "index": false,
+          "nullable": false,
+          "primary_key": true,
+          "server_default": null,
+          "type": "UUID",
+          "unique": false
+        },
+        "kind": {
+          "enum": {
+            "name": "unit_exception_kind",
+            "schema": "tenant",
+            "values": [
+              "closed",
+              "special_hours"
+            ]
+          },
+          "foreign_keys": [],
+          "index": false,
+          "nullable": false,
+          "primary_key": false,
+          "server_default": null,
+          "type": "VARCHAR(13)",
+          "unique": false
+        },
+        "opens_at": {
+          "foreign_keys": [],
+          "index": false,
+          "nullable": true,
+          "primary_key": false,
+          "server_default": null,
+          "type": "TIME",
+          "unique": false
+        },
+        "reason": {
+          "foreign_keys": [],
+          "index": false,
+          "nullable": true,
+          "primary_key": false,
+          "server_default": null,
+          "type": "VARCHAR(120)",
+          "unique": false
+        },
+        "starts_on": {
+          "foreign_keys": [],
+          "index": false,
+          "nullable": false,
+          "primary_key": false,
+          "server_default": null,
+          "type": "DATE",
+          "unique": false
+        },
+        "unit_id": {
+          "foreign_keys": [
+            "units.id ondelete=CASCADE"
+          ],
+          "index": false,
+          "nullable": false,
+          "primary_key": false,
+          "server_default": null,
+          "type": "UUID",
+          "unique": false
+        },
+        "updated_at": {
+          "foreign_keys": [],
+          "index": false,
+          "nullable": false,
+          "primary_key": false,
+          "server_default": "now()",
+          "type": "DATETIME",
+          "unique": false
+        }
+      },
+      "constraints": [
+        "CheckConstraint:ck_unit_exception_dates()",
+        "CheckConstraint:ck_unit_exception_hours()",
+        "ExcludeConstraint:ex_unit_exception_overlap(unit_id)"
+      ],
+      "indexes": []
+    },
     "tenant.units": {
       "columns": {
         "active": {
@@ -1032,6 +1601,15 @@
           "type": "VARCHAR(120)",
           "unique": false
         },
+        "online_booking": {
+          "foreign_keys": [],
+          "index": false,
+          "nullable": false,
+          "primary_key": false,
+          "server_default": "true",
+          "type": "BOOLEAN",
+          "unique": false
+        },
         "phone": {
           "foreign_keys": [],
           "index": false,
@@ -1061,7 +1639,9 @@
         }
       },
       "constraints": [],
-      "indexes": []
+      "indexes": [
+        "uq_unit_name() unique"
+      ]
     },
     "tenant.user_units": {
       "columns": {

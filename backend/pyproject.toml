@@ -69,6 +69,7 @@ containers = [
     "app.modules.provisioning",
     "app.modules.catalog",
     "app.modules.clients",
+    "app.modules.scheduling",
 ]
 layers = ["router", "service", "repository", "model"]
 
@@ -82,4 +83,9 @@ forbidden_modules = ["app.main", "app.management"]
 name = "identity is the bottom module: it imports no domain module"
 type = "forbidden"
 source_modules = ["app.modules.identity"]
-forbidden_modules = ["app.modules.catalog", "app.modules.clients", "app.modules.provisioning"]
+forbidden_modules = [
+    "app.modules.catalog",
+    "app.modules.clients",
+    "app.modules.provisioning",
+    "app.modules.scheduling",
+]

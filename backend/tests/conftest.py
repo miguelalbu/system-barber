@@ -57,8 +57,10 @@ async def _insert_core_key(raw: str, scopes: list[str], name: str) -> uuid.UUID:
 
 async def _destroy_everything(slugs: set[str], key_ids: list[uuid.UUID]) -> None:
     eng = _migrator()
-    async with eng.begin() as conn:
-        for slug in slugs:
+    # One transaction per shop: dropping every test schema at once takes one
+    # lock per object and exhausts `max_locks_per_transaction` ("out of shared memory").
+    for slug in slugs:
+        async with eng.begin() as conn:
             schema = await conn.scalar(
                 text("SELECT schema_name FROM public.tenants WHERE slug = :s"), {"s": slug}
             )
@@ -70,6 +72,7 @@ async def _destroy_everything(slugs: set[str], key_ids: list[uuid.UUID]) -> None
                     await conn.execute(text(f'DROP OWNED BY "{schema}"'))
                     await conn.execute(text(f'DROP ROLE "{schema}"'))
             await conn.execute(text("DELETE FROM public.tenants WHERE slug = :s"), {"s": slug})
+    async with eng.begin() as conn:
         for key_id in key_ids:
             await conn.execute(
                 text("DELETE FROM public.core_audit_log WHERE core_key_id = :k"), {"k": key_id}

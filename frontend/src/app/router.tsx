@@ -6,8 +6,9 @@ import { DashboardScreen } from '@/features/dashboard';
 import { TokensScreen } from '@/features/design-system';
 import { FinanceScreen } from '@/features/finance';
 import { LandingScreen } from '@/features/landing';
-import { RegistryScreen } from '@/features/registry';
-import { AgendaScreen } from '@/features/scheduling';
+import { RegistryPageScreen, RegistryScreen } from '@/features/registry';
+import { SettingsScreen } from '@/features/settings';
+import { AgendaScreen, ScheduleScreen, TimeOffScreen } from '@/features/scheduling';
 import AppLayout from './_shell/AppLayout';
 
 /** Every route renders a screen through its feature's barrel (`features/<f>/index.ts`). */
@@ -27,10 +28,14 @@ export const router = createBrowserRouter([
           { index: true, element: <Navigate to="agenda" replace /> },
           { path: 'dashboard', element: <DashboardScreen /> },
           { path: 'agenda', element: <AgendaScreen /> },
+          { path: 'agenda/escala', element: <ScheduleScreen /> },
+          { path: 'agenda/ausencias', element: <TimeOffScreen /> },
           { path: 'conversas', element: <InboxScreen /> },
           { path: 'clientes', element: <CustomersScreen /> },
           { path: 'cadastros', element: <RegistryScreen /> },
+          { path: 'cadastros/:registry', element: <RegistryPageScreen /> },
           { path: 'financeiro', element: <FinanceScreen /> },
+          { path: 'configuracoes', element: <SettingsScreen /> },
           { path: 'tokens', element: <TokensScreen /> },
         ],
       },

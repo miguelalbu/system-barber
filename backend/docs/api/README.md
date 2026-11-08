@@ -8,6 +8,7 @@ Gerada do OpenAPI do código (`app.openapi()` e o contrato do control plane). Pa
 |---|---|
 | [Autenticação](auth.md) | Login da equipe, renovação rotativa do token, logout e o perfil da sessão. |
 | [Barbearia](shop.md) | Dados e configuração da barbearia da sessão e as unidades visíveis ao usuário. |
+| [Escala e ausências](scheduling.md) | Jornada semanal dos barbeiros, turnos especiais de um dia, folgas, férias, atestados e bloqueios de horário, e o tempo de trabalho efetivo que a agenda usa. |
 | [Equipe e convites](team.md) | Membros, convites e o aceite de convite — inclusive o primeiro acesso do dono de uma barbearia recém-provisionada. |
 | [Barbeiros](barbers.md) | Cadastro dos profissionais que atendem (coluna da agenda, comissão). |
 | [Catálogo](catalog.md) | Serviços da barbearia (um preço para todas as unidades, em centavos) e os serviços que cada barbeiro faz. |

@@ -8,7 +8,9 @@ Quais endpoints do backend cada feature chama, casados com o contrato congelado 
 |---|---|
 | [`auth`](auth.md) | 5 |
 | [`customers`](customers.md) | 4 |
-| [`registry`](registry.md) | 11 |
+| [`registry`](registry.md) | 22 |
+| [`scheduling`](scheduling.md) | 10 |
+| [`settings`](settings.md) | 3 |
 | [`shared`](shared.md) | 1 |
 
 ## Ainda sobre dados de demonstração

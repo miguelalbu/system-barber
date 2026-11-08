@@ -6,8 +6,11 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.modules.identity.model import Role, Tenant, Unit
 from app.modules.identity.repository import invites as invite_repo
+from app.modules.identity.repository import shop_settings as settings_repo
+from app.modules.identity.repository import unit_hours as hours_repo
 from app.modules.identity.repository import units as unit_repo
 from app.modules.identity.repository import users as user_repo
+from app.modules.identity.service._unit_rules import DEFAULT_WEEK
 from app.modules.identity.service.create_invite import create_invite, invite_link
 
 DEFAULT_UNIT_NAME = "Unidade principal"
@@ -51,13 +54,17 @@ async def bootstrap_tenant(
     unit_name: str | None,
 ) -> str | None:
     """
-    First data of a new shop: its first unit and the owner's first-access
-    invite. Idempotent — a retried provisioning job does not duplicate the
-    unit, and returns None when the owner already exists.
+    First data of a new shop: its settings row, its first unit (with the
+    default week) and the owner's first-access invite. Idempotent — a retried
+    provisioning job does not duplicate the unit, and returns None when the
+    owner already exists.
     """
+    await settings_repo.get_or_create(session)
     if not await unit_repo.any_exists(session):
-        session.add(Unit(name=unit_name or DEFAULT_UNIT_NAME))
+        unit = Unit(name=unit_name or DEFAULT_UNIT_NAME)
+        session.add(unit)
         await session.flush()
+        await hours_repo.replace(session, unit.id, DEFAULT_WEEK)
     try:
         return await issue_owner_invite(
             session, tenant, owner_name=owner_name, owner_email=owner_email

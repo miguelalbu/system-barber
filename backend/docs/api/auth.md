@@ -149,7 +149,12 @@ Valores: `provisioning`, `active`, `failed`, `suspended`, `archived`
 | `id` | `string` (uuid) | sim |  |
 | `name` | `string` | sim |  |
 | `timezone` | `string` | sim |  |
+| `address` | `string` \| `null` | sim |  |
+| `phone` | `string` \| `null` | sim | E.164 |
+| `online_booking` | `boolean` | sim | Offered to the AI and the public booking link |
 | `active` | `boolean` | sim |  |
+| `created_at` | `string` (date-time) | sim |  |
+| `updated_at` | `string` (date-time) | sim |  |
 
 #### UserOut
 

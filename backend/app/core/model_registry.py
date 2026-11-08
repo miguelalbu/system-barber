@@ -11,5 +11,6 @@ from app.modules.catalog import model as catalog_models  # noqa: F401
 from app.modules.clients import model as clients_models  # noqa: F401
 from app.modules.identity import model as identity_models  # noqa: F401
 from app.modules.provisioning import model as provisioning_models  # noqa: F401
+from app.modules.scheduling import model as scheduling_models  # noqa: F401
 
 __all__ = ["ControlBase", "TenantBase"]

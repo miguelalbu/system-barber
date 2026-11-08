@@ -1,7 +1,7 @@
 /**
  * Phone numbers as the panel shows and accepts them. The API stores E.164
  * (`+5511987654321`) and normalizes whatever is typed; these mirror its rule
- * (backend `app/modules/clients/phone.py`) so the form can warn first.
+ * (backend `app/core/phone.py`) so the form can warn first.
  */
 
 const digitsOf = (text: string) => text.replace(/\D/g, '');

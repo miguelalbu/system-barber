@@ -45,6 +45,12 @@ class Conflict(AppError):
     status_code = status.HTTP_409_CONFLICT
 
 
+class UnprocessableEntity(AppError):
+    """Well-formed but against a rule that needs stored data to check (e.g. a date already past)."""
+
+    status_code = status.HTTP_422_UNPROCESSABLE_CONTENT
+
+
 class TooManyRequests(AppError):
     status_code = status.HTTP_429_TOO_MANY_REQUESTS
 

@@ -306,3 +306,57 @@ de usuários com acesso ao painel; o convite com cargo `barber` criava um barbei
 **Consequences:** Os limites de plano (barbeiros e unidades por plano) vão contar o cadastro de
 barbeiros, não os logins. A lista de clientes do barbeiro (`own`) fica vazia até a agenda existir.
 
+## DEC-017 — Unidades, expediente, exceções de calendário e configurações da barbearia
+
+**Date:** 2026-11-06
+**Status:** accepted
+
+**Context:** Primeira spec da Fase 1 do ROADMAP (S01, `⏳active_identity-units-hours.md`): a agenda,
+a IA e o link precisam saber quando cada unidade está aberta e quais são as políticas de
+agendamento.
+
+**Decision:**
+- Unidades, expediente (`unit_business_hours`, até 3 intervalos por dia, sem cruzar meia-noite),
+  exceções (`unit_exceptions`: `closed` ou `special_hours`, de um a 366 dias) e `shop_settings`
+  (uma linha, `id = 1`) ficam no `identity`, ao lado de `units`. Políticas são da barbearia, não da
+  unidade.
+- Permissão nova **`unit:configure`** (dono `all`, gerente `unit`) para expediente e exceções
+  (PD-33); criar, editar e apagar unidade e as políticas continuam `tenant:configure`.
+- Sobreposição de exceções barrada no banco por `EXCLUDE USING gist` com a extensão **`btree_gist`**
+  no `public` (migration de controle `c0002`), que a agenda (S03) também vai usar.
+- Unidade nasce com a semana padrão seg–sáb 09:00–19:00 (migration para as existentes,
+  `bootstrap_tenant` e `create_unit` para as novas).
+- Normalização de telefone desceu para `app/core/phone.py` (formato, não regra de negócio).
+- `UnprocessableEntity` (422) em `app/core/exceptions.py` para regras que dependem de dado guardado.
+- Outros módulos leem pelo `identity.public`: `get_unit`, `list_units`, `get_unit_calendar`
+  (calendário efetivo no fuso da unidade) e `get_shop_settings`.
+
+**Consequences:** Apagar unidade é recusado também quando há `user_units` (o `CASCADE` tornaria um
+usuário restrito em "vê todas"). O limite de unidades do plano (402) entra com a S15.
+
+## DEC-018 — Módulo `scheduling`: jornada do barbeiro, turnos especiais e ausências
+
+**Date:** 2026-11-07
+**Status:** accepted
+
+**Context:** Spec S02 (`⏳active_scheduling-barber-schedule.md`). A agenda (S03) precisa do tempo
+de trabalho efetivo de cada barbeiro.
+
+**Decision:**
+- Módulo novo **`scheduling`** (no contrato de camadas; o `identity` não o importa). Tabelas
+  `barber_work_hours`, `barber_shift_overrides` e `barber_time_off`, com FK para `barbers.id` em
+  `CASCADE` (configuração, não histórico).
+- **DEC-007 reavaliada e mantida:** o `Barber` fica no `identity`; o `scheduling` lê pelo
+  `identity.public` (`BarberInfo`, `get_barber_info`, `list_barber_infos`, `get_unit_week`).
+- Tempo efetivo = (turno especial, ou jornada, ou horário da unidade se não houver jornada) ∩
+  horário aberto da unidade no dia − ausências, calculado no fuso da unidade e devolvido em UTC
+  (`service/working_time.py`).
+- Jornada como intervalos (almoço = lacuna); sem versão "vale a partir de"; semana toda vazia é
+  recusada (para afastar, ausência ou inativar).
+- Ausência de dia inteiro guardada de meia-noite local a meia-noite local; sobreposição barrada por
+  `EXCLUDE USING gist` (`btree_gist`). Permissão por tipo: folga/férias/atestado `team:manage`,
+  bloqueio `appointment:create` (barbeiro só o próprio).
+- `ClockTime` em `app/core/clock.py`, compartilhado com o horário da unidade.
+
+**Consequences:** A S03 consome `effective_intervals` direto (mesmo módulo); a S14 e a S16 usam
+`capacity_minutes` e `barbers_without_hours` pelo `scheduling.public`.

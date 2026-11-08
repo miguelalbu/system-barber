@@ -15,7 +15,16 @@ export type IconName =
   | 'bell'
   | 'warning'
   | 'close'
-  | 'logout';
+  | 'logout'
+  | 'unit'
+  | 'scissors'
+  | 'clock'
+  | 'bottle'
+  | 'layers'
+  | 'star'
+  | 'ticket'
+  | 'card'
+  | 'settings';
 
 const PATHS: Record<IconName, string> = {
   dashboard: 'M3 9.5 8 4l5 5.5V13a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1z',
@@ -34,6 +43,18 @@ const PATHS: Record<IconName, string> = {
   warning: 'M8 2.5 14.5 13.5h-13zM8 6.5v3.2M8 11.6v.2',
   close: 'M4 4l8 8M12 4l-8 8',
   logout: 'M9.5 2.5h2.5a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1H9.5M9 8H2.5M4.5 5.5 2 8l2.5 2.5',
+  unit: 'M3 13.5v-9l5-2 5 2v9M2 13.5h12M6.5 13.5v-3h3v3M5.5 6.5h1M9.5 6.5h1M5.5 8.5h1M9.5 8.5h1',
+  scissors:
+    'M4.5 6a1.7 1.7 0 1 0 0-3.4 1.7 1.7 0 0 0 0 3.4zM4.5 13.4a1.7 1.7 0 1 0 0-3.4 1.7 1.7 0 0 0 0 3.4zM5.9 5.3 13.5 12M5.9 10.7 13.5 4',
+  clock: 'M8 14a6 6 0 1 0 0-12 6 6 0 0 0 0 12zM8 4.8V8l2.2 1.5',
+  bottle:
+    'M6.5 2h3M7 2v2.3L5.3 6a1.4 1.4 0 0 0-.4 1v6a1 1 0 0 0 1 1h4.2a1 1 0 0 0 1-1V7a1.4 1.4 0 0 0-.4-1L9 4.3V2M4.9 9h6.2',
+  layers: 'M8 2.5l6 3-6 3-6-3zM2 8.3l6 3 6-3M2 11l6 3 6-3',
+  star: 'M8 2.2l1.8 3.7 4 .6-2.9 2.8.7 4L8 11.4l-3.6 1.9.7-4-2.9-2.8 4-.6z',
+  ticket: 'M2.5 4.5h11v2a1.5 1.5 0 0 0 0 3v2h-11v-2a1.5 1.5 0 0 0 0-3zM10 4.5v7',
+  card: 'M2 4h12v8H2zM2 6.8h12M4.5 10h2',
+  settings:
+    'M8 10a2 2 0 1 0 0-4 2 2 0 0 0 0 4zM8 1.8v1.7M8 12.5v1.7M1.8 8h1.7M12.5 8h1.7M3.6 3.6l1.2 1.2M11.2 11.2l1.2 1.2M3.6 12.4l1.2-1.2M11.2 4.8l1.2-1.2',
 };
 
 interface IconProps {
